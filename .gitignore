@@ -1,0 +1,22 @@
+# .NET build files
+bin/
+obj/
+.vs/
+
+# macOS
+.DS_Store
+
+# Local secrets
+appsettings.Development.json
+appsettings.Local.json
+.env
+.env.*
+
+# Local databases
+*.db
+*.db-shm
+*.db-wal
+
+# User-specific files
+*.user
+*.suo

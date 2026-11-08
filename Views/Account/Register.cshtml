@@ -1,0 +1,292 @@
+@model KABILIN.ViewModels.RegisterViewModel
+
+@{
+    ViewData["Title"] = "Register";
+    Layout = "_AuthLayout";
+}
+
+<!-- REGISTRATION ERROR NOTIFICATION -->
+<div id="registerErrorToast"
+     asp-validation-summary="All"
+     class="register-error-toast"
+     role="alert">
+</div>
+
+<div class="register-wrapper">
+
+    <div class="glass-card register-card">
+
+        <!-- HEADER -->
+
+        <div class="auth-header">
+
+            <h2>Create an Account</h2>
+
+            <p>
+                Join KABILIN to get guided support,
+                manage your requests, and access
+                essential services.
+            </p>
+
+        </div>
+
+
+        <!-- REGISTRATION FORM -->
+
+        <form asp-controller="Account"
+              asp-action="Register"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly"
+                 class="error-message">
+            </div>
+
+
+            <div class="form-grid">
+
+                <!-- FIRST NAME -->
+
+                <div class="form-group">
+
+                    <label asp-for="FirstName">
+                        First Name
+                    </label>
+
+                    <input asp-for="FirstName"
+                           class="glass-input"
+                           placeholder="First name" />
+
+                    <span asp-validation-for="FirstName"
+                          class="field-error">
+                    </span>
+
+                </div>
+
+
+                <!-- LAST NAME -->
+
+                <div class="form-group">
+
+                    <label asp-for="LastName">
+                        Last Name
+                    </label>
+
+                    <input asp-for="LastName"
+                           class="glass-input"
+                           placeholder="Last name" />
+
+                    <span asp-validation-for="LastName"
+                          class="field-error">
+                    </span>
+
+                </div>
+
+
+                <!-- MIDDLE NAME -->
+
+                <div class="form-group">
+
+                    <label asp-for="MiddleName">
+                        Middle Name (Optional)
+                    </label>
+
+                    <input asp-for="MiddleName"
+                           class="glass-input"
+                           placeholder="Middle name" />
+
+                </div>
+
+
+                <!-- CONTACT NUMBER -->
+
+                <div class="form-group">
+
+                    <label asp-for="ContactNum">
+                        Contact Number
+                    </label>
+
+                    <input asp-for="ContactNum"
+                           class="glass-input"
+                           type="tel"
+                           placeholder="09XXXXXXXXX" />
+
+                    <span asp-validation-for="ContactNum"
+                          class="field-error">
+                    </span>
+
+                </div>
+
+
+                <!-- EMAIL ADDRESS -->
+
+                <div class="form-group full-width">
+
+                    <label asp-for="EmailAddress">
+                        Email Address
+                    </label>
+
+                    <input asp-for="EmailAddress"
+                           class="glass-input"
+                           type="email"
+                           placeholder="Enter your email"
+                           autocomplete="email" />
+
+                    <span asp-validation-for="EmailAddress"
+                          class="field-error">
+                    </span>
+
+                </div>
+
+
+                <!-- ADDRESS -->
+
+                <div class="form-group">
+
+                    <label asp-for="Address">
+                        Address
+                    </label>
+
+                    <input asp-for="Address"
+                           class="glass-input"
+                           placeholder="Street / Barangay" />
+
+                    <span asp-validation-for="Address"
+                          class="field-error">
+                    </span>
+
+                </div>
+
+
+                <!-- CITY -->
+
+                <div class="form-group">
+
+                    <label asp-for="City">
+                        City
+                    </label>
+
+                    <input asp-for="City"
+                           class="glass-input"
+                           placeholder="City" />
+
+                    <span asp-validation-for="City"
+                          class="field-error">
+                    </span>
+
+                </div>
+
+
+                <!-- PASSWORD -->
+
+                <div class="form-group">
+
+                    <label asp-for="Password">
+                        Password
+                    </label>
+
+                    <input asp-for="Password"
+                           class="glass-input"
+                           type="password"
+                           placeholder="Minimum of 8 characters"
+                           autocomplete="new-password" />
+
+                    <span asp-validation-for="Password"
+                          class="field-error">
+                    </span>
+
+                </div>
+
+                <!-- CONFIRM PASSWORD -->
+
+                <div class="form-group">
+
+                    <label asp-for="ConfirmPassword">
+                        Confirm Password
+                    </label>
+
+                    <input asp-for="ConfirmPassword"
+                           class="glass-input"
+                           type="password"
+                           placeholder="Confirm password"
+                           autocomplete="new-password" />
+
+                    <span asp-validation-for="ConfirmPassword"
+                          class="field-error">
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- REGISTER BUTTON -->
+
+            <button type="submit"
+                    class="primary-button register-button">
+
+                Register
+
+            </button>
+
+        </form>
+
+
+        <!-- LOGIN LINK -->
+
+        <p class="auth-footer">
+
+            Already have an account?
+
+            <a asp-controller="Account"
+               asp-action="Login">
+
+                Log In
+
+            </a>
+
+        </p>
+
+    </div>
+
+</div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const toast = document.getElementById("registerErrorToast");
+        const form = document.querySelector(".register-card form");
+
+        if (!toast) return;
+
+        let hideTimer;
+
+        function showErrorToast() {
+
+            if (!toast.classList.contains("validation-summary-errors")) {
+                return;
+            }
+
+            toast.classList.remove("toast-hide");
+
+            clearTimeout(hideTimer);
+
+            hideTimer = setTimeout(function () {
+                toast.classList.add("toast-hide");
+            }, 3000);
+        }
+
+        // Show errors returned by the server
+        showErrorToast();
+
+        // Also handle client-side form validation
+        if (form) {
+            form.addEventListener("submit", function () {
+                setTimeout(showErrorToast, 100);
+            });
+        }
+
+    });
+</script>

@@ -1,0 +1,46 @@
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "_AuthLayout";
+}
+
+<div class="glass-card dashboard-card">
+
+    <h1>Welcome to KABILIN!</h1>
+
+    <p>
+        Hello, @User.Identity?.Name!
+    </p>
+
+    <p>
+        You have successfully logged into your account.
+    </p>
+
+    @if (User.IsInRole("Admin"))
+    {
+        <p>
+            Account Type: Administrator
+        </p>
+    }
+    else
+    {
+        <p>
+            Account Type: Family
+        </p>
+    }
+
+    <form asp-controller="Account"
+          asp-action="Logout"
+          method="post">
+
+        @Html.AntiForgeryToken()
+
+        <button type="submit"
+                class="primary-button">
+
+            Log Out
+
+        </button>
+
+    </form>
+
+</div>
