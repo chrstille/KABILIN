@@ -1,21 +1,16 @@
 using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
 using KABILIN.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace KABILIN.Controllers;
 
 public class HomeController : Controller
 {
-    public IActionResult Index()
-    {
-        return View();
-    }
+    [AllowAnonymous]
+    public IActionResult Index() => RedirectToAction("Login", "Account");
 
-    public IActionResult Privacy()
-    {
-        return View();
-    }
-
+    [AllowAnonymous]
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {

@@ -1,0 +1,24 @@
+@model RequirementFormViewModel
+@{
+    var editing = Model.RequirementID > 0;
+    ViewData["Title"] = editing ? "Edit requirement" : "Add requirement"; ViewData["Nav"] = "settings";
+    var types = (List<RequestType>)ViewData["Types"]!;
+}
+<div class="breadcrumb"><a asp-action="Index">Settings</a> @Html.Icon("chevron-right", "icon-sm") <a asp-action="Requirements">Document requirements</a> @Html.Icon("chevron-right", "icon-sm") <span>@(editing ? "Edit" : "Add")</span></div>
+<div class="page-header"><h1>@(editing ? "Edit requirement" : "Add requirement")</h1></div>
+<div class="card" style="max-width:720px"><div class="card-body">
+    <form method="post" novalidate>
+        <div class="stack">
+            <div class="field"><label asp-for="TypeID" class="label">Request type <span class="req">*</span></label>
+                <select asp-for="TypeID" class="select"><option value="">Select...</option>@foreach (var t in types) { <option value="@t.TypeID" selected="@(Model.TypeID == t.TypeID)">@t.TypeName</option> }</select>
+                <span asp-validation-for="TypeID" class="field-error"></span></div>
+            <div class="field"><label asp-for="Name" class="label">Document name <span class="req">*</span></label><input asp-for="Name" class="input" /><span asp-validation-for="Name" class="field-error"></span></div>
+            <div class="field"><label asp-for="Description" class="label">Description <span class="opt">(shown to families)</span></label><textarea asp-for="Description" class="textarea"></textarea></div>
+            <div class="field" style="max-width:180px"><label asp-for="SortOrder" class="label">Display order</label><input asp-for="SortOrder" class="input" type="number" min="0" /></div>
+            <label class="check"><input asp-for="IsRequired" type="checkbox" /><span>Families must upload this document</span></label>
+            <label class="check"><input asp-for="IsActive" type="checkbox" /><span>Active (shown on new requests)</span></label>
+        </div>
+        <div class="form-actions"><button type="submit" class="btn btn-primary">@(editing ? "Save changes" : "Add requirement")</button><a class="btn btn-ghost" asp-action="Requirements">Cancel</a></div>
+    </form>
+</div></div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

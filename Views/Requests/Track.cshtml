@@ -1,0 +1,69 @@
+@model List<RequestListItem>
+@{
+    ViewData["Title"] = "Track Requests";
+    ViewData["Nav"] = "track";
+    var filter = (string)ViewData["Filter"]!;
+    (string Key, string Label)[] tabs = { ("all", "All"), ("pending", "Pending"), ("processing", "In processing"), ("completed", "Completed"), ("rejected", "Rejected") };
+}
+<div class="page-header">
+    <div>
+        <h1>Track requests</h1>
+        <p>See where each request stands. Estimated dates are only estimates and may change.</p>
+    </div>
+    <div class="actions"><a class="btn btn-primary" asp-action="New">@Html.Icon("plus") New request</a></div>
+</div>
+
+<div class="row mb-16" role="tablist" aria-label="Filter requests">
+    @foreach (var t in tabs)
+    {
+        <a class="btn @(filter == t.Key ? "btn-primary" : "btn-secondary") btn-sm" asp-action="Track" asp-route-filter="@t.Key">@t.Label</a>
+    }
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="card"><div class="empty">
+        <span class="empty-icon">@Html.Icon("route", "icon-lg")</span>
+        <h3>Nothing to track here</h3>
+        <p>@(filter == "all" ? "Requests you submit will appear here with their progress." : "No requests match this filter.")</p>
+        @if (filter == "all") { <a class="btn btn-primary" asp-action="New">Start a request</a> }
+    </div></div>
+}
+else
+{
+    <div class="stack">
+    @foreach (var r in Model)
+    {
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <h3><a asp-action="Details" asp-route-id="@r.RequestID">@r.TypeName</a></h3>
+                    <div class="support">@r.ReferenceNumber &middot; @r.DeceasedName &middot; Filed @Ph.Date(r.DateFiled)</div>
+                </div>
+                <div class="row">
+                    @if (r.IsOverdue) { <span class="badge badge-overdue">Past estimate</span> }
+                    @Html.StatusBadge(r.StatusName)
+                </div>
+            </div>
+            <div class="card-body">
+                <partial name="_Tracker" model="r.Steps" />
+                <div class="tracker-note grid grid-2">
+                    <div>
+                        <div class="support">Estimated completion</div>
+                        <div class="strong">@(r.EstimatedCompletionDate.HasValue ? Ph.Date(r.EstimatedCompletionDate) : "Not set yet")</div>
+                        @if (r.EstimatedCompletionDate.HasValue && !StatusIds.IsClosed(r.StatusID)) { <div class="small muted">An estimate, not a guaranteed date.</div> }
+                    </div>
+                    <div>
+                        <div class="support">Latest remarks</div>
+                        <div>@(string.IsNullOrWhiteSpace(r.LatestRemarks) ? "No remarks yet." : r.LatestRemarks)</div>
+                    </div>
+                </div>
+                @if (r.StatusID == StatusIds.Incomplete)
+                {
+                    <div class="alert alert-warning mt-16">@Html.Icon("triangle-alert")<div>Some documents need your attention. <a asp-action="Details" asp-route-id="@r.RequestID">Fix them now</a></div></div>
+                }
+            </div>
+        </div>
+    }
+    </div>
+}

@@ -1,0 +1,44 @@
+@model PagedResult<AdminUserRow>
+@{
+    ViewData["Title"] = "Users"; ViewData["Nav"] = "users";
+    var q = ViewData["Query"] as string; var st = ViewData["StatusFilter"] as string;
+}
+<div class="page-header"><div><h1>Users</h1><p>Registered family representatives. Deactivated accounts cannot sign in.</p></div></div>
+<div class="card">
+    <form method="get" class="toolbar">
+        <div class="field grow"><label class="label" for="q">Search</label>
+            <div class="search-input">@Html.Icon("search")<input id="q" name="q" value="@q" class="input" placeholder="Name, email or contact number" /></div></div>
+        <div class="field"><label class="label" for="status">Account</label>
+            <select id="status" name="status" class="select"><option value="">All</option><option value="active" selected="@(st == "active")">Active</option><option value="inactive" selected="@(st == "inactive")">Deactivated</option></select></div>
+        <button class="btn btn-secondary" type="submit">Filter</button>
+        @if (!string.IsNullOrEmpty(q) || !string.IsNullOrEmpty(st)) { <a class="btn btn-ghost" asp-action="Index">Clear</a> }
+    </form>
+    @if (Model.Total == 0)
+    {
+        <div class="empty"><span class="empty-icon">@Html.Icon("users", "icon-lg")</span><h3>No users found</h3><p>Family representatives appear here after they register.</p></div>
+    }
+    else
+    {
+        <div class="table-wrap"><table class="table responsive">
+            <thead><tr><th>Name</th><th>Contact</th><th>City</th><th>Records</th><th>Requests</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var u in Model.Items)
+            {
+                <tr>
+                    <td class="cell-main" data-label="Name"><a class="cell-title" asp-action="Details" asp-route-id="@u.UserID">@u.FullName</a><div class="cell-sub">@u.EmailAddress</div></td>
+                    <td data-label="Contact">@u.ContactNum</td>
+                    <td data-label="City">@u.City</td>
+                    <td data-label="Records">@u.DeceasedCount</td>
+                    <td data-label="Requests">@u.RequestCount</td>
+                    <td data-label="Status">@if (u.IsActive) { <span class="badge badge-approved">Active</span> } else { <span class="badge badge-muted">Deactivated</span> }</td>
+                    <td class="cell-actions"><div class="actions">
+                        <a class="btn btn-secondary btn-sm" asp-action="Details" asp-route-id="@u.UserID">View</a>
+                        <form asp-action="Toggle" asp-route-id="@u.UserID" method="post">
+                            <button type="submit" class="btn @(u.IsActive ? "btn-danger" : "btn-secondary") btn-sm" data-confirm="@(u.IsActive ? $"{u.FullName} will be signed out and will not be able to log in until reactivated." : $"{u.FullName} will be able to log in again.")" data-confirm-title="@(u.IsActive ? "Deactivate account?" : "Activate account?")" data-confirm-button="@(u.IsActive ? "Deactivate" : "Activate")" data-confirm-danger="@(u.IsActive ? "true" : "false")">@(u.IsActive ? "Deactivate" : "Activate")</button>
+                        </form></div></td>
+                </tr>
+            }
+            </tbody></table></div>
+        <partial name="_Pager" model="Model" />
+    }
+</div>

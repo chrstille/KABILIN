@@ -1,0 +1,158 @@
+@model RequestDetailsViewModel
+@{
+    var r = Model.Request;
+    ViewData["Title"] = r.ReferenceNumber; ViewData["Nav"] = "requests";
+    var closed = StatusIds.IsClosed(r.StatusID);
+}
+<div class="breadcrumb"><a asp-action="Index">Document requests</a> @Html.Icon("chevron-right", "icon-sm") <span>@r.ReferenceNumber</span></div>
+<div class="page-header">
+    <div><h1>@r.Type!.TypeName</h1><p>@r.ReferenceNumber &middot; filed @Ph.DateTimeText(r.DateFiled)</p></div>
+    <div class="actions">
+        @if (Model.IsOverdue) { <span class="badge badge-overdue">Overdue</span> }
+        @Html.StatusBadge(r.Status!.StatusName)
+    </div>
+</div>
+
+<div class="card mb-16">
+    <div class="card-header"><h3>@Html.Icon("route") Progress</h3></div>
+    <div class="card-body"><partial name="_Tracker" model="Model.Steps" /></div>
+</div>
+
+<div class="split">
+    <div class="stack">
+        <div class="card">
+            <div class="card-header"><h3>@Html.Icon("paperclip") Requirements and documents</h3>
+                @if (Model.MissingRequired > 0) { <span class="badge badge-incomplete-requirements">@Model.MissingRequired required missing</span> }</div>
+            <div class="card-body flush">
+                <ul class="req-list">
+                @foreach (var row in Model.Requirements)
+                {
+                    var d = row.Current;
+                    <li class="req-item">
+                        <div class="req-head">
+                            <div><div class="req-name">@row.Requirement.Name @if (!row.Requirement.IsRequired) { <span class="muted" style="font-weight:400">(optional)</span> }</div>
+                                @if (!string.IsNullOrEmpty(row.Requirement.Description)) { <div class="support">@row.Requirement.Description</div> }</div>
+                            @if (d == null) { <span class="badge @(row.Requirement.IsRequired ? "badge-incomplete-requirements" : "badge-muted")">Not uploaded</span> }
+                            else { @Html.VerificationBadge(d.VerificationStatus) }
+                        </div>
+                        @if (d != null)
+                        {
+                            <div class="req-file">@Html.Icon("paperclip", "icon-sm")
+                                <a asp-action="File" asp-route-id="@d.DocumentID" target="_blank" rel="noopener">@d.OriginalFileName</a>
+                                <span class="muted">@Ph.FileSize(d.FileSize) &middot; uploaded @Ph.DateTimeText(d.UploadedAt)</span></div>
+                            @if (!string.IsNullOrWhiteSpace(d.VerificationRemarks)) { <div class="support req-note">Remarks: @d.VerificationRemarks</div> }
+                            @if (row.Previous.Count > 0) { <div class="small muted req-note">@row.Previous.Count earlier version@(row.Previous.Count == 1 ? "" : "s") replaced by the family.</div> }
+
+                            @if (!closed)
+                            {
+                                <div class="row mt-8">
+                                    @if (d.VerificationStatus != VerificationStates.Verified)
+                                    {
+                                        <form asp-action="Verify" asp-route-id="@r.RequestID" method="post">
+                                            <input type="hidden" name="documentId" value="@d.DocumentID" /><input type="hidden" name="result" value="verify" />
+                                            <button type="submit" class="btn btn-primary btn-sm">@Html.Icon("check", "icon-sm") Verify</button>
+                                        </form>
+                                    }
+                                    <details class="inline-form">
+                                        <summary>@Html.Icon("flag", "icon-sm") Mark incomplete</summary>
+                                        <form asp-action="Verify" asp-route-id="@r.RequestID" method="post" class="stack">
+                                            <input type="hidden" name="documentId" value="@d.DocumentID" /><input type="hidden" name="result" value="incomplete" />
+                                            <textarea name="remarks" class="textarea" required maxlength="1000" placeholder="Explain what needs to be corrected. The family will see this."></textarea>
+                                            <div><button type="submit" class="btn btn-danger btn-sm">Mark incomplete and notify</button></div>
+                                        </form>
+                                    </details>
+                                </div>
+                            }
+                        }
+                    </li>
+                }
+                </ul>
+            </div>
+        </div>
+
+        @if (Model.Verifications.Count > 0)
+        {
+            <div class="card">
+                <div class="card-header"><h3>@Html.Icon("badge-check") Verification records</h3></div>
+                <div class="card-body flush table-wrap"><table class="table"><thead><tr><th>Document</th><th>Result</th><th>By</th><th>When</th></tr></thead><tbody>
+                @foreach (var v in Model.Verifications)
+                {
+                    <tr><td>@v.Document?.OriginalFileName<div class="cell-sub">@v.Remarks</div></td>
+                    <td>@Html.VerificationBadge(v.Result)</td><td>@v.VerifiedBy?.FullName</td><td class="nowrap">@Ph.DateTimeText(v.VerifiedAt)</td></tr>
+                }</tbody></table></div>
+            </div>
+        }
+
+        <div class="card">
+            <div class="card-header"><h3>@Html.Icon("history") Request history</h3></div>
+            <div class="card-body"><ul class="timeline">
+            @foreach (var h in Model.History)
+            {
+                <li><span class="pip"></span><div class="t-title">@h.Title</div><div class="t-meta">@h.Actor &middot; @Ph.DateTimeText(h.When)</div>
+                    @if (!string.IsNullOrWhiteSpace(h.Text)) { <div class="t-text">@h.Text</div> }</li>
+            }</ul></div>
+        </div>
+    </div>
+
+    <div class="stack">
+        <div class="card">
+            <div class="card-header"><h3>@Html.Icon("info") Details</h3></div>
+            <div class="card-body"><dl class="kv" style="grid-template-columns:120px minmax(0,1fr)">
+                <dt>Family</dt><dd><a asp-controller="AdminUsers" asp-action="Details" asp-route-id="@r.UserID">@r.User!.FullName</a><div class="support">@r.User.ContactNum</div></dd>
+                <dt>Deceased</dt><dd><a asp-controller="AdminDeceased" asp-action="Details" asp-route-id="@r.DeceasedID">@r.Deceased!.FullName</a></dd>
+                <dt>Estimated</dt><dd>@Ph.Date(r.EstimatedCompletionDate)</dd>
+                <dt>Remarks</dt><dd>@(string.IsNullOrWhiteSpace(r.LatestRemarks) ? "-" : r.LatestRemarks)</dd>
+                @if (!string.IsNullOrWhiteSpace(r.FamilyNotes)) { <dt>Family notes</dt><dd>@r.FamilyNotes</dd> }
+            </dl></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h3>@Html.Icon("refresh-cw") Update status</h3></div>
+            <div class="card-body">
+            @if (closed) { <p class="muted">This request is @r.Status.StatusName.ToLower(). No further status changes are possible.</p> }
+            else
+            {
+                <form asp-action="UpdateStatus" asp-route-id="@r.RequestID" method="post" class="stack">
+                    <div class="field"><label class="label" for="statusId">Move to</label>
+                        <select id="statusId" name="statusId" class="select" required>
+                            <option value="">Select next status...</option>
+                            @foreach (var s in Model.AllowedNextStatuses) { <option value="@s.StatusID">@s.StatusName</option> }
+                        </select></div>
+                    <div class="field"><label class="label" for="statusRemarks">Remarks <span class="opt">(required for Incomplete or Rejected)</span></label>
+                        <textarea id="statusRemarks" name="remarks" class="textarea" maxlength="1000"></textarea></div>
+                    <button type="submit" class="btn btn-primary">Update status</button>
+                </form>
+            }
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h3>@Html.Icon("calendar-clock") Estimated timeline</h3></div>
+            <div class="card-body">
+            @if (closed) { <p class="muted">The timeline is locked because the request is closed.</p> }
+            else
+            {
+                <form asp-action="Timeline" asp-route-id="@r.RequestID" method="post" class="stack">
+                    <div class="field"><label class="label" for="estimatedDate">Estimated completion date</label>
+                        <input id="estimatedDate" name="estimatedDate" type="date" class="input" value="@r.EstimatedCompletionDate?.ToString("yyyy-MM-dd")" />
+                        <span class="hint">Shown to the family as an estimate, not a guarantee. Leave empty to clear.</span></div>
+                    <div class="field"><label class="label" for="timelineRemarks">Timeline remarks <span class="opt">(optional)</span></label>
+                        <textarea id="timelineRemarks" name="remarks" class="textarea" maxlength="1000"></textarea></div>
+                    <button type="submit" class="btn btn-secondary">Save timeline</button>
+                </form>
+            }
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h3>@Html.Icon("message-square-text") Add remark</h3></div>
+            <div class="card-body">
+                <form asp-action="Remark" asp-route-id="@r.RequestID" method="post" class="stack">
+                    <div class="field"><label class="label" for="remarks">Message to the family</label>
+                        <textarea id="remarks" name="remarks" class="textarea" required maxlength="1000"></textarea></div>
+                    <button type="submit" class="btn btn-secondary">Add remark and notify</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

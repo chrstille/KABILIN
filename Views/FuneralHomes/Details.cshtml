@@ -1,0 +1,56 @@
+@model FuneralHome
+@{
+    ViewData["Title"] = Model.FuneralName;
+    ViewData["Nav"] = "funeral";
+    var mapData = new[] { new { id = Model.FuneralID, name = Model.FuneralName, address = Model.Location, contact = Model.ContactNum, lat = Model.Latitude, lng = Model.Longitude, url = (string?)null } };
+}
+@section Styles { <link rel="stylesheet" href="~/lib/leaflet/leaflet.css" /> }
+
+<div class="breadcrumb"><a asp-action="Index">Funeral homes</a> @Html.Icon("chevron-right", "icon-sm") <span>@Model.FuneralName</span></div>
+<div class="page-header">
+    <div><h1>@Model.FuneralName</h1>@if (!string.IsNullOrEmpty(Model.City)) { <p>@Model.City</p> }</div>
+    <div class="actions"><a class="btn btn-primary" href="tel:@Model.ContactNum">@Html.Icon("phone") Call @Model.ContactNum</a></div>
+</div>
+
+<div class="split">
+    <div class="stack">
+        <div class="card">
+            <div class="card-header"><h3>@Html.Icon("info") About</h3></div>
+            <div class="card-body">
+                @if (!string.IsNullOrWhiteSpace(Model.Description)) { <p class="mb-16">@Model.Description</p> }
+                <dl class="kv">
+                    <dt>Address</dt><dd>@Model.Location</dd>
+                    <dt>Contact number</dt><dd><a href="tel:@Model.ContactNum">@Model.ContactNum</a></dd>
+                    @if (!string.IsNullOrEmpty(Model.EmailAddress)) { <dt>Email</dt><dd><a href="mailto:@Model.EmailAddress">@Model.EmailAddress</a></dd> }
+                </dl>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header"><h3>@Html.Icon("list-checks") Services offered</h3></div>
+            <div class="card-body">
+                @if (Model.ServiceList.Any()) { <div class="tags" style="margin-top:0">@foreach (var s in Model.ServiceList) { <span class="tag">@s</span> }</div> }
+                else { <p class="muted">Services have not been listed yet. Please contact the funeral home.</p> }
+            </div>
+        </div>
+    </div>
+    <div>
+        @if (Model.HasCoordinates)
+        {
+            <div id="funeralMap" class="map map-sm" role="region" aria-label="Map location"></div>
+            <p class="support mt-8">Map data from OpenStreetMap contributors.</p>
+        }
+        else
+        {
+            <div class="card"><div class="empty"><span class="empty-icon">@Html.Icon("map-pin-off", "icon-lg")</span><h3>No map location</h3><p>The map location of this funeral home has not been added yet.</p></div></div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    @if (Model.HasCoordinates)
+    {
+        <script type="application/json" id="funeral-data">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(mapData))</script>
+        <script src="~/lib/leaflet/leaflet.js"></script>
+        <script src="~/js/funeral-map.js" asp-append-version="true"></script>
+    }
+}

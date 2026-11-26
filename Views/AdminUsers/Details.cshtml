@@ -1,0 +1,48 @@
+@model AdminUserDetailsViewModel
+@{
+    var u = Model.User;
+    ViewData["Title"] = u.FullName; ViewData["Nav"] = "users";
+}
+<div class="breadcrumb"><a asp-action="Index">Users</a> @Html.Icon("chevron-right", "icon-sm") <span>@u.FullName</span></div>
+<div class="page-header">
+    <div><h1>@u.FullName</h1><p>@(u.IsActive ? "Active account" : "Deactivated account") &middot; joined @Ph.Date(u.CreatedAt)</p></div>
+    <div class="actions">
+        <a class="btn btn-secondary" asp-controller="AdminNotifications" asp-action="Send" asp-route-userId="@u.UserID">@Html.Icon("send") Send notification</a>
+        @if (u.Role == AppRoles.Family)
+        {
+            <form asp-action="Toggle" asp-route-id="@u.UserID" asp-route-returnTo="details" method="post">
+                <button type="submit" class="btn @(u.IsActive ? "btn-danger" : "btn-primary")" data-confirm="@(u.IsActive ? "This person will be signed out and cannot log in until reactivated." : "This person will be able to log in again.")" data-confirm-title="@(u.IsActive ? "Deactivate account?" : "Activate account?")" data-confirm-button="@(u.IsActive ? "Deactivate" : "Activate")" data-confirm-danger="@(u.IsActive ? "true" : "false")">@(u.IsActive ? "Deactivate account" : "Activate account")</button>
+            </form>
+        }
+    </div>
+</div>
+<div class="split">
+    <div class="stack">
+        <div class="card"><div class="card-header"><h3>@Html.Icon("files") Document requests</h3></div>
+            @if (Model.Requests.Count == 0) { <div class="card-body"><p class="muted">No requests submitted.</p></div> }
+            else {
+                <div class="card-body flush table-wrap"><table class="table responsive"><thead><tr><th>Reference</th><th>Request</th><th>Filed</th><th>Status</th></tr></thead><tbody>
+                @foreach (var r in Model.Requests) {
+                    <tr><td class="cell-main" data-label="Reference"><a class="cell-title" asp-controller="AdminRequests" asp-action="Details" asp-route-id="@r.RequestID">@r.ReferenceNumber</a></td>
+                    <td data-label="Request"><span class="cell-stack"><div>@r.TypeName</div><div class="cell-sub">@r.DeceasedName</div></span></td><td data-label="Filed" class="nowrap">@Ph.Date(r.DateFiled)</td><td data-label="Status">@Html.StatusBadge(r.StatusName)</td></tr>
+                }</tbody></table></div>
+            }
+        </div>
+        <div class="card"><div class="card-header"><h3>@Html.Icon("book-user") Deceased records</h3></div>
+            @if (Model.Deceased.Count == 0) { <div class="card-body"><p class="muted">No deceased records.</p></div> }
+            else {
+                <ul class="list">@foreach (var d in Model.Deceased) {
+                    <li class="list-item"><div class="grow"><a class="list-title" asp-controller="AdminDeceased" asp-action="Details" asp-route-id="@d.DeceasedID">@d.FullName</a>
+                    <div class="support">Died @Ph.Date(d.DateOfDeath)@(string.IsNullOrEmpty(d.PlaceOfDeath) ? "" : " - " + d.PlaceOfDeath)</div></div></li>
+                }</ul>
+            }
+        </div>
+    </div>
+    <div class="card"><div class="card-header"><h3>@Html.Icon("user-round") Profile</h3></div><div class="card-body">
+        <dl class="kv">
+            <dt>Email</dt><dd>@u.EmailAddress</dd>
+            <dt>Contact</dt><dd>@u.ContactNum</dd>
+            <dt>Address</dt><dd>@u.Address, @u.City</dd>
+            <dt>Last login</dt><dd>@(u.LastLoginAt.HasValue ? Ph.DateTimeText(u.LastLoginAt.Value) : "Never")</dd>
+        </dl></div></div>
+</div>

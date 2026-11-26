@@ -1,0 +1,136 @@
+@model NewRequestViewModel
+@{
+    ViewData["Title"] = "New request";
+    ViewData["Nav"] = "requests";
+}
+<div class="breadcrumb"><a asp-action="Index">Document requests</a> @Html.Icon("chevron-right", "icon-sm") <span>New request</span></div>
+<div class="page-header">
+    <div>
+        <h1>New request</h1>
+        <p>Choose who the request is for, what you need, and upload the supporting documents. Accepted files: PDF, JPG or PNG, up to 5 MB each.</p>
+    </div>
+</div>
+
+@if (Model.Deceased.Count == 0)
+{
+    <div class="card"><div class="empty">
+        <span class="empty-icon">@Html.Icon("book-user", "icon-lg")</span>
+        <h3>Add a deceased record first</h3>
+        <p>Every request is linked to a deceased-person record.</p>
+        <a class="btn btn-primary" asp-controller="Deceased" asp-action="Create">Add a deceased record</a>
+    </div></div>
+    return;
+}
+
+<form asp-action="New" method="post" enctype="multipart/form-data" id="requestForm">
+    <div asp-validation-summary="All" class="alert alert-error mb-16" role="alert"></div>
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <p class="support mb-16">For your security, the browser clears selected files after an error. Please choose your files again before submitting.</p>
+    }
+
+    <div class="stack" style="max-width:860px">
+        <div class="card">
+            <div class="card-header"><h3>@Html.Icon("book-user") 1. Who is this request for?</h3></div>
+            <div class="card-body">
+                <div class="field" style="max-width:420px">
+                    <label asp-for="DeceasedID" class="label">Deceased person <span class="req">*</span></label>
+                    <select asp-for="DeceasedID" class="select" required>
+                        <option value="">Select a record...</option>
+                        @foreach (var d in Model.Deceased) { <option value="@d.DeceasedID" selected="@(Model.DeceasedID == d.DeceasedID)">@d.Name</option> }
+                    </select>
+                    <span class="hint">Not listed? <a asp-controller="Deceased" asp-action="Create">Add a new record</a>.</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h3>@Html.Icon("file-text") 2. What do you need?</h3></div>
+            <div class="card-body">
+                <div class="choice-grid" role="radiogroup" aria-label="Document or service">
+                    @foreach (var t in Model.Types)
+                    {
+                        <label class="choice">
+                            <input type="radio" name="TypeID" value="@t.TypeID" checked="@(Model.TypeID == t.TypeID)" required />
+                            <span class="choice-box">
+                                <span class="stat-icon">@Html.Icon(UiHelpers.TypeIcon(t.TypeID))</span>
+                                <span><strong>@t.TypeName</strong><span class="support">@t.Description</span></span>
+                            </span>
+                        </label>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="requirementsCard">
+            <div class="card-header"><h3>@Html.Icon("paperclip") 3. Requirements and uploads</h3></div>
+            <div class="card-body">
+                <p class="muted" id="pickTypeHint">Choose what you need above to see its requirements.</p>
+                @foreach (var t in Model.Types)
+                {
+                    <div data-type-block="@t.TypeID" hidden>
+                        <p class="support mb-16">Required documents are marked. Optional ones can be added later from the request page.</p>
+                        <div class="stack">
+                        @foreach (var r in t.Requirements)
+                        {
+                            <div class="field" style="border-bottom:1px solid var(--border);padding-bottom:14px">
+                                <label class="label" for="file_@r.RequirementID">
+                                    @r.Name
+                                    @if (r.IsRequired) { <span class="req">*</span> } else { <span class="opt">(optional)</span> }
+                                </label>
+                                @if (!string.IsNullOrEmpty(r.Description)) { <span class="hint">@r.Description</span> }
+                                <input class="file-input" type="file" id="file_@r.RequirementID" name="file_@r.RequirementID"
+                                       accept=".pdf,.jpg,.jpeg,.png" data-upload data-required="@(r.IsRequired ? "1" : "0")" disabled />
+                                <span class="field-error" data-upload-msg></span>
+                            </div>
+                        }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h3>@Html.Icon("clipboard-check") 4. Review and submit</h3></div>
+            <div class="card-body">
+                <div class="field mb-16">
+                    <label asp-for="FamilyNotes" class="label">Notes for our staff <span class="opt">(optional)</span></label>
+                    <textarea asp-for="FamilyNotes" class="textarea" maxlength="1000" placeholder="Anything we should know about this request"></textarea>
+                </div>
+                <label class="check">
+                    <input type="checkbox" name="Confirm" value="true" checked="@Model.Confirm" required />
+                    <span>I confirm that the information and documents I am submitting are accurate.</span>
+                </label>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Submit request</button>
+                    <a class="btn btn-ghost" asp-action="Index">Cancel</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        (function () {
+            var radios = document.querySelectorAll('input[name="TypeID"]');
+            var blocks = document.querySelectorAll('[data-type-block]');
+            var hint = document.getElementById('pickTypeHint');
+            function sync() {
+                var chosen = document.querySelector('input[name="TypeID"]:checked');
+                var id = chosen ? chosen.value : null;
+                hint.hidden = !!id;
+                blocks.forEach(function (b) {
+                    var show = b.getAttribute('data-type-block') === id;
+                    b.hidden = !show;
+                    b.querySelectorAll('input[type=file]').forEach(function (f) {
+                        f.disabled = !show;
+                        f.required = show && f.getAttribute('data-required') === '1';
+                    });
+                });
+            }
+            radios.forEach(function (r) { r.addEventListener('change', sync); });
+            sync();
+        })();
+    </script>
+}

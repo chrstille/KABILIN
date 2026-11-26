@@ -1,0 +1,54 @@
+@model NotificationListViewModel
+@{
+    ViewData["Title"] = "Notifications";
+    ViewData["Nav"] = "notifications";
+}
+<div class="page-header">
+    <div><h1>Notifications</h1><p>Updates about your requests, documents and remarks from our staff.</p></div>
+    <div class="actions">
+        @if (Model.UnreadCount > 0)
+        {
+            <form asp-action="MarkAllRead" method="post"><button type="submit" class="btn btn-secondary">@Html.Icon("check-check") Mark all as read</button></form>
+        }
+    </div>
+</div>
+
+<div class="row mb-16">
+    <a class="btn @(Model.Filter == "all" ? "btn-primary" : "btn-secondary") btn-sm" asp-action="Index" asp-route-filter="all">All</a>
+    <a class="btn @(Model.Filter == "unread" ? "btn-primary" : "btn-secondary") btn-sm" asp-action="Index" asp-route-filter="unread">Unread (@Model.UnreadCount)</a>
+</div>
+
+<div class="card">
+    @if (Model.Items.Total == 0)
+    {
+        <div class="empty">
+            <span class="empty-icon">@Html.Icon("bell", "icon-lg")</span>
+            <h3>@(Model.Filter == "unread" ? "You are all caught up" : "No notifications yet")</h3>
+            <p>@(Model.Filter == "unread" ? "There is nothing unread." : "You will be notified when something changes on your requests.")</p>
+        </div>
+    }
+    else
+    {
+        <ul class="list">
+        @foreach (var n in Model.Items.Items)
+        {
+            <li class="list-item @(n.IsRead ? "" : "unread")">
+                <span style="width:8px;margin-top:7px">@if (!n.IsRead) { <span class="dot-unread" title="Unread" style="display:block"></span> }</span>
+                <div class="grow">
+                    <div class="list-title">@n.Title</div>
+                    <div>@n.Message</div>
+                    <div class="small muted mt-8">@Ph.DateTimeText(n.CreatedAt)</div>
+                    @if (n.RequestID.HasValue) { <a class="support" asp-controller="Requests" asp-action="Details" asp-route-id="@n.RequestID">View request</a> }
+                </div>
+                @if (!n.IsRead)
+                {
+                    <form asp-action="MarkRead" asp-route-id="@n.NotificationID" asp-route-filter="@Model.Filter" method="post">
+                        <button type="submit" class="btn btn-ghost btn-sm">Mark as read</button>
+                    </form>
+                }
+            </li>
+        }
+        </ul>
+        <partial name="_Pager" model="Model.Items" />
+    }
+</div>

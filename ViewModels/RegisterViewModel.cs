@@ -15,8 +15,8 @@ namespace KABILIN.ViewModels
         [MaxLength(100)]
         public string? MiddleName { get; set; }
 
-        [Required]
-        [MaxLength(20)]
+        [Required(ErrorMessage = "Please enter your contact number.")]
+        [RegularExpression(@"^[0-9+\-\s()]{7,20}$", ErrorMessage = "Enter a valid contact number.")]
         public string ContactNum { get; set; } = string.Empty;
 
         [Required]
@@ -33,7 +33,7 @@ namespace KABILIN.ViewModels
         public string City { get; set; } = string.Empty;
 
         [Required]
-        [MinLength(8)]
+        [MinLength(8, ErrorMessage = "Use at least 8 characters.")]
         [DataType(DataType.Password)]
         public string Password { get; set; } = string.Empty;
 

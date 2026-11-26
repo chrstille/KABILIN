@@ -1,29 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8" />
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>@ViewData["Title"] - KABILIN</title>
-
-    <link rel="stylesheet"
-      href="~/css/auth.css"
-      asp-append-version="true" />
+    <link rel="icon" type="image/png" href="~/images/kabilin-logo.png" />
+    <link rel="stylesheet" href="~/css/kabilin.css" asp-append-version="true" />
 </head>
-
-<body class="auth-body">
-
-    <main class="auth-container">
-
-        @RenderBody()
-
+<body>
+    <main class="auth-page">
+        <div class="auth-shell @(ViewData["Wide"] is true ? "wide" : "")">
+            <div class="auth-brand">
+                <img src="~/images/kabilin-logo.png" alt="KABILIN" />
+                <p>Centralized document processing and bereavement services</p>
+            </div>
+            @RenderBody()
+            <p class="auth-disclaimer">
+                KABILIN is a working prototype. Government and insurance processing are simulated and
+                the platform is not connected to any agency or insurer.
+            </p>
+        </div>
     </main>
-
+    <partial name="_Toasts" />
+    <script src="~/js/kabilin.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
-
 </body>
-
 </html>

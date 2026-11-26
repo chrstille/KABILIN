@@ -1,0 +1,50 @@
+@using System.Security.Claims
+@{
+    var pageTitle = ViewData["Title"] as string ?? "KABILIN";
+    var mustChange = User.HasClaim(KABILIN.Services.AuthHelper.PasswordChangeClaim, "1");
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@pageTitle - KABILIN</title>
+    <link rel="icon" type="image/png" href="~/images/kabilin-logo.png" />
+    <link rel="stylesheet" href="~/css/kabilin.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <div class="app">
+        @await Component.InvokeAsync("Sidebar", new { active = ViewData["Nav"] as string })
+
+        <div class="main">
+            <header class="topbar">
+                <button type="button" class="menu-btn" data-nav-toggle aria-label="Open menu" aria-controls="sidebar" aria-expanded="false">@Html.Icon("menu")</button>
+                <img src="~/images/kabilin-logo.png" alt="" />
+                <span class="name">KABILIN</span>
+            </header>
+
+            <main class="content" id="main">
+                @if (mustChange && User.IsInRole(AppRoles.Admin))
+                {
+                    <div class="alert alert-warning mb-16" role="alert">
+                        @Html.Icon("triangle-alert")
+                        <div>
+                            This administrator account still uses its initial password.
+                            <a asp-controller="AdminSettings" asp-action="Index">Change it in Settings</a> before deploying to production.
+                        </div>
+                    </div>
+                }
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+    <div class="scrim" aria-hidden="true"></div>
+
+    <partial name="_Toasts" />
+    <partial name="_ConfirmDialog" />
+
+    <script src="~/js/kabilin.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

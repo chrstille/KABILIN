@@ -1,0 +1,77 @@
+@model PagedResult<RequestListItem>
+@{
+    ViewData["Title"] = "Document Requests";
+    ViewData["Nav"] = "requests";
+    var q = ViewData["Query"] as string;
+    var statusFilter = ViewData["StatusFilter"] as int?;
+    var statuses = (List<Status>)ViewData["Statuses"]!;
+    var hasDeceased = (bool)ViewData["HasDeceased"]!;
+}
+<div class="page-header">
+    <div>
+        <h1>Document requests</h1>
+        <p>All requests you have submitted. Open one to upload or replace documents.</p>
+    </div>
+    <div class="actions"><a class="btn btn-primary" asp-action="New">@Html.Icon("plus") New request</a></div>
+</div>
+
+<div class="card">
+    <form method="get" class="toolbar">
+        <div class="field grow">
+            <label class="label" for="q">Search</label>
+            <div class="search-input">@Html.Icon("search")<input id="q" name="q" class="input" value="@q" placeholder="Reference number or name" /></div>
+        </div>
+        <div class="field">
+            <label class="label" for="status">Status</label>
+            <select id="status" name="status" class="select">
+                <option value="">All statuses</option>
+                @foreach (var id in StatusIds.DisplayOrder)
+                {
+                    var s = statuses.First(x => x.StatusID == id);
+                    <option value="@s.StatusID" selected="@(statusFilter == s.StatusID)">@s.StatusName</option>
+                }
+            </select>
+        </div>
+        <button class="btn btn-secondary" type="submit">Filter</button>
+        @if (!string.IsNullOrEmpty(q) || statusFilter.HasValue) { <a class="btn btn-ghost" asp-action="Index">Clear</a> }
+    </form>
+
+    @if (Model.Total == 0)
+    {
+        <div class="empty">
+            <span class="empty-icon">@Html.Icon("files", "icon-lg")</span>
+            <h3>@(string.IsNullOrEmpty(q) && !statusFilter.HasValue ? "No requests yet" : "No matching requests")</h3>
+            <p>@(hasDeceased ? "Choose a document or service to begin." : "Add a deceased-person record first, then you can start a request.")</p>
+            @if (string.IsNullOrEmpty(q) && !statusFilter.HasValue)
+            {
+                if (hasDeceased) { <a class="btn btn-primary" asp-action="New">Start a request</a> }
+                else { <a class="btn btn-primary" asp-controller="Deceased" asp-action="Create">Add a deceased record</a> }
+            }
+        </div>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table class="table responsive">
+                <thead><tr><th>Reference</th><th>Request</th><th>Documents</th><th>Filed</th><th>Status</th><th></th></tr></thead>
+                <tbody>
+                @foreach (var r in Model.Items)
+                {
+                    <tr>
+                        <td class="cell-main" data-label="Reference"><a class="cell-title" asp-action="Details" asp-route-id="@r.RequestID">@r.ReferenceNumber</a></td>
+                        <td data-label="Request"><span class="cell-stack"><div class="cell-title">@r.TypeName</div><div class="cell-sub">@r.DeceasedName</div></span></td>
+                        <td data-label="Documents">
+                            @if (r.FlaggedCount > 0) { <span class="badge badge-incomplete-requirements">@r.FlaggedCount need correction</span> }
+                            else { <span class="muted">@r.VerifiedCount of @r.RequiredCount verified</span> }
+                        </td>
+                        <td data-label="Filed" class="nowrap">@Ph.Date(r.DateFiled)</td>
+                        <td data-label="Status">@Html.StatusBadge(r.StatusName)</td>
+                        <td class="cell-actions"><div class="actions"><a class="btn btn-secondary btn-sm" asp-action="Details" asp-route-id="@r.RequestID">Open</a></div></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        <partial name="_Pager" model="Model" />
+    }
+</div>

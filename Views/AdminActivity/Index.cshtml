@@ -1,0 +1,28 @@
+@model PagedResult<AdminActivityRow>
+@{
+    ViewData["Title"] = "Activity Logs"; ViewData["Nav"] = "activity";
+    var q = ViewData["Query"] as string; var act = ViewData["Action"] as string; var actions = (List<string>)ViewData["Actions"]!;
+}
+<div class="page-header"><div><h1>Activity logs</h1><p>A record of important actions taken by families and staff.</p></div></div>
+<div class="card">
+    <form method="get" class="toolbar">
+        <div class="field grow"><label class="label" for="q">Search</label><div class="search-input">@Html.Icon("search")<input id="q" name="q" value="@q" class="input" placeholder="Description, person or reference" /></div></div>
+        <div class="field"><label class="label" for="action">Action</label><select id="action" name="action" class="select"><option value="">All actions</option>@foreach (var a in actions) { <option value="@a" selected="@(act == a)">@a</option> }</select></div>
+        <button class="btn btn-secondary" type="submit">Filter</button>
+        @if (!string.IsNullOrEmpty(q) || !string.IsNullOrEmpty(act)) { <a class="btn btn-ghost" asp-action="Index">Clear</a> }
+    </form>
+    @if (Model.Total == 0) { <div class="empty"><span class="empty-icon">@Html.Icon("history", "icon-lg")</span><h3>No activity found</h3><p>Actions will be recorded here as the platform is used.</p></div> }
+    else
+    {
+        <div class="table-wrap"><table class="table responsive"><thead><tr><th>When</th><th>Action</th><th>Description</th><th>By</th><th>Related</th></tr></thead><tbody>
+        @foreach (var a in Model.Items)
+        {
+            <tr><td class="cell-main nowrap" data-label="When">@Ph.DateTimeText(a.CreatedAt)</td>
+            <td data-label="Action"><span class="badge badge-submitted">@a.Action</span></td>
+            <td data-label="Description" style="max-width:420px">@a.Description</td>
+            <td data-label="By">@a.UserName</td>
+            <td data-label="Related">@if (a.RequestID.HasValue) { <a asp-controller="AdminRequests" asp-action="Details" asp-route-id="@a.RequestID">@a.Reference</a> } else { <span class="muted">-</span> }</td></tr>
+        }</tbody></table></div>
+        <partial name="_Pager" model="Model" />
+    }
+</div>

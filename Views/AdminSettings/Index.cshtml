@@ -1,0 +1,28 @@
+@{
+    ViewData["Title"] = "Settings"; ViewData["Nav"] = "settings";
+    var admin = (User)ViewData["Admin"]!;
+    var must = admin.MustChangePassword;
+}
+<div class="page-header"><div><h1>Settings</h1><p>Manage your administrator account and the documents families must submit.</p></div></div>
+<div class="grid grid-2" style="align-items:start">
+    <div class="card"><div class="card-header"><h3>@Html.Icon("lock") Change password</h3></div><div class="card-body">
+        @if (must) { <div class="alert alert-warning mb-16">@Html.Icon("triangle-alert")<div>This account still uses its initial password. Change it before deploying to production.</div></div> }
+        <form asp-controller="Account" asp-action="ChangePassword" method="post" novalidate>
+            <input type="hidden" name="returnTo" value="admin" />
+            <div class="stack">
+                <div class="field"><label class="label" for="cur">Current password</label><input id="cur" name="Password.CurrentPassword" type="password" class="input" autocomplete="current-password" required /></div>
+                <div class="field"><label class="label" for="new">New password</label><input id="new" name="Password.NewPassword" type="password" class="input" autocomplete="new-password" required minlength="8" /><span class="hint">At least 8 characters.</span></div>
+                <div class="field"><label class="label" for="conf">Confirm new password</label><input id="conf" name="Password.ConfirmNewPassword" type="password" class="input" autocomplete="new-password" required /></div>
+            </div>
+            <div class="form-actions"><button type="submit" class="btn btn-primary">Update password</button></div>
+        </form>
+    </div></div>
+    <div class="stack">
+        <div class="card"><div class="card-header"><h3>@Html.Icon("user-round") Account</h3></div><div class="card-body"><dl class="kv">
+            <dt>Name</dt><dd>@admin.FullName</dd><dt>Email</dt><dd>@admin.EmailAddress</dd><dt>Role</dt><dd>Administrator</dd>
+            <dt>Last login</dt><dd>@(admin.LastLoginAt.HasValue ? Ph.DateTimeText(admin.LastLoginAt.Value) : "-")</dd></dl></div></div>
+        <div class="card"><div class="card-header"><h3>@Html.Icon("list-checks") Document requirements</h3></div><div class="card-body">
+            <p class="muted mb-16">Control which documents families must upload for each type of request.</p>
+            <a class="btn btn-secondary" asp-action="Requirements">Manage requirements</a></div></div>
+    </div>
+</div>

@@ -20,3 +20,5 @@ appsettings.Local.json
 # User-specific files
 *.user
 *.suo
+# Uploaded supporting documents (private, runtime only)
+App_Data/uploads/

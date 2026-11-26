@@ -40,6 +40,20 @@ namespace KABILIN.Models
 
         [Required]
         [MaxLength(20)]
-        public string Role { get; set; } = "Family";
+        public string Role { get; set; } = AppRoles.Family;
+
+        /// <summary>Deactivated accounts cannot sign in.</summary>
+        public bool IsActive { get; set; } = true;
+
+        /// <summary>True for seeded accounts that still use their initial password.</summary>
+        public bool MustChangePassword { get; set; }
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public DateTime? LastLoginAt { get; set; }
+
+        public string FullName =>
+            string.Join(' ', new[] { FirstName, MiddleName, LastName }
+                .Where(s => !string.IsNullOrWhiteSpace(s)));
     }
 }

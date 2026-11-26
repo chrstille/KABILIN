@@ -1,0 +1,9 @@
+@{
+    ViewData["Title"] = "Access denied";
+    Layout = "_AuthLayout";
+}
+<div class="auth-card">
+    <h1>You do not have access to this page</h1>
+    <p class="lead">This area is only available to a different type of account.</p>
+    <a class="btn btn-primary" asp-controller="Account" asp-action="Login">Go to my dashboard</a>
+</div>

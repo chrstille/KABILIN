@@ -1,0 +1,95 @@
+@model ProfilePageViewModel
+@{
+    ViewData["Title"] = "My Profile";
+    ViewData["Nav"] = "profile";
+}
+
+<div class="page-header">
+    <div>
+        <h1>My profile</h1>
+        <p>Keep your contact details current so we can reach you about your requests.</p>
+    </div>
+</div>
+
+@if (User.HasClaim(KABILIN.Services.AuthHelper.PasswordChangeClaim, "1"))
+{
+    <div class="alert alert-warning mb-16">@Html.Icon("triangle-alert")<div>Please change your password below to continue.</div></div>
+}
+
+<div class="grid grid-2" style="align-items:start">
+    <div class="card">
+        <div class="card-header"><h3>@Html.Icon("user-round") Personal details</h3></div>
+        <div class="card-body">
+            <form asp-action="Profile" method="post" novalidate>
+                <div class="form-grid">
+                    <div class="field">
+                        <label asp-for="Profile.FirstName" class="label">First name <span class="req">*</span></label>
+                        <input asp-for="Profile.FirstName" class="input" />
+                        <span asp-validation-for="Profile.FirstName" class="field-error"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="Profile.LastName" class="label">Last name <span class="req">*</span></label>
+                        <input asp-for="Profile.LastName" class="input" />
+                        <span asp-validation-for="Profile.LastName" class="field-error"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="Profile.MiddleName" class="label">Middle name <span class="opt">(optional)</span></label>
+                        <input asp-for="Profile.MiddleName" class="input" />
+                    </div>
+                    <div class="field">
+                        <label asp-for="Profile.ContactNum" class="label">Contact number <span class="req">*</span></label>
+                        <input asp-for="Profile.ContactNum" class="input" type="tel" />
+                        <span asp-validation-for="Profile.ContactNum" class="field-error"></span>
+                    </div>
+                    <div class="field full">
+                        <label class="label">Email address</label>
+                        <input class="input" value="@Model.Profile.EmailAddress" readonly />
+                        <span class="hint">Your email is your sign-in name and cannot be changed here.</span>
+                    </div>
+                    <div class="field full">
+                        <label asp-for="Profile.Address" class="label">Address <span class="req">*</span></label>
+                        <input asp-for="Profile.Address" class="input" />
+                        <span asp-validation-for="Profile.Address" class="field-error"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="Profile.City" class="label">City or municipality <span class="req">*</span></label>
+                        <input asp-for="Profile.City" class="input" />
+                        <span asp-validation-for="Profile.City" class="field-error"></span>
+                    </div>
+                </div>
+                <div class="form-actions"><button type="submit" class="btn btn-primary">Save changes</button></div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card" id="password">
+        <div class="card-header"><h3>@Html.Icon("lock") Change password</h3></div>
+        <div class="card-body">
+            <form asp-action="ChangePassword" method="post" novalidate>
+                <div class="stack">
+                    <div class="field">
+                        <label asp-for="Password.CurrentPassword" class="label">Current password</label>
+                        <input asp-for="Password.CurrentPassword" class="input" type="password" autocomplete="current-password" />
+                        <span asp-validation-for="Password.CurrentPassword" class="field-error"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="Password.NewPassword" class="label">New password</label>
+                        <input asp-for="Password.NewPassword" class="input" type="password" autocomplete="new-password" />
+                        <span class="hint">At least 8 characters.</span>
+                        <span asp-validation-for="Password.NewPassword" class="field-error"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="Password.ConfirmNewPassword" class="label">Confirm new password</label>
+                        <input asp-for="Password.ConfirmNewPassword" class="input" type="password" autocomplete="new-password" />
+                        <span asp-validation-for="Password.ConfirmNewPassword" class="field-error"></span>
+                    </div>
+                </div>
+                <div class="form-actions"><button type="submit" class="btn btn-primary">Update password</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

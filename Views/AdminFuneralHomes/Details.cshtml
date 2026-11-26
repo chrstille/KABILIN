@@ -1,0 +1,33 @@
+@model FuneralHome
+@{
+    ViewData["Title"] = Model.FuneralName; ViewData["Nav"] = "funeral";
+    var mapData = new[] { new { id = Model.FuneralID, name = Model.FuneralName, address = Model.Location, contact = Model.ContactNum, lat = Model.Latitude, lng = Model.Longitude, url = (string?)null } };
+}
+@section Styles { <link rel="stylesheet" href="~/lib/leaflet/leaflet.css" /> }
+<div class="breadcrumb"><a asp-action="Index">Funeral homes</a> @Html.Icon("chevron-right", "icon-sm") <span>@Model.FuneralName</span></div>
+<div class="page-header">
+    <div><h1>@Model.FuneralName</h1><p>@(Model.IsActive ? "Visible to families" : "Archived - hidden from families")</p></div>
+    <div class="actions"><a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.FuneralID">@Html.Icon("pencil") Edit</a></div>
+</div>
+<div class="split">
+    <div class="stack">
+        <div class="card"><div class="card-header"><h3>@Html.Icon("info") Details</h3></div><div class="card-body"><dl class="kv">
+            <dt>Address</dt><dd>@Model.Location</dd><dt>City</dt><dd>@(Model.City ?? "-")</dd><dt>Contact</dt><dd>@Model.ContactNum</dd>
+            <dt>Email</dt><dd>@(Model.EmailAddress ?? "-")</dd><dt>Coordinates</dt><dd>@(Model.HasCoordinates ? $"{Model.Latitude}, {Model.Longitude}" : "Not set")</dd>
+            <dt>About</dt><dd>@(Model.Description ?? "-")</dd></dl></div></div>
+        <div class="card"><div class="card-header"><h3>@Html.Icon("list-checks") Services</h3></div><div class="card-body">
+            @if (Model.ServiceList.Any()) { <div class="tags" style="margin-top:0">@foreach (var s in Model.ServiceList) { <span class="tag">@s</span> }</div> } else { <p class="muted">No services listed.</p> }</div></div>
+    </div>
+    <div>
+        @if (Model.HasCoordinates) { <div id="funeralMap" class="map map-sm"></div> }
+        else { <div class="card"><div class="empty"><span class="empty-icon">@Html.Icon("map-pin-off", "icon-lg")</span><h3>No coordinates</h3><p>Add latitude and longitude so this funeral home appears on the map.</p><a class="btn btn-secondary" asp-action="Edit" asp-route-id="@Model.FuneralID">Add location</a></div></div> }
+    </div>
+</div>
+@section Scripts {
+    @if (Model.HasCoordinates)
+    {
+        <script type="application/json" id="funeral-data">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(mapData))</script>
+        <script src="~/lib/leaflet/leaflet.js"></script>
+        <script src="~/js/funeral-map.js" asp-append-version="true"></script>
+    }
+}

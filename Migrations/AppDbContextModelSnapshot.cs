@@ -22,6 +22,51 @@ namespace KABILIN.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("KABILIN.Models.ActivityLog", b =>
+                {
+                    b.Property<int>("LogID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LogID"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(600)
+                        .HasColumnType("character varying(600)");
+
+                    b.Property<int?>("EntityID")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("EntityType")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<int?>("RequestID")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("UserID")
+                        .HasColumnType("integer");
+
+                    b.HasKey("LogID");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("RequestID");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("ActivityLogs");
+                });
+
             modelBuilder.Entity("KABILIN.Models.Deceased", b =>
                 {
                     b.Property<int>("DeceasedID")
@@ -29,6 +74,16 @@ namespace KABILIN.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("DeceasedID"));
+
+                    b.Property<string>("CauseOfDeath")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly?>("DateOfBirth")
+                        .HasColumnType("date");
 
                     b.Property<DateOnly>("DateOfDeath")
                         .HasColumnType("date");
@@ -44,6 +99,14 @@ namespace KABILIN.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.Property<string>("MiddleName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("PlaceOfDeath")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("Relationship")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
@@ -74,6 +137,25 @@ namespace KABILIN.Migrations
                     b.Property<int>("DeceasedID")
                         .HasColumnType("integer");
 
+                    b.Property<DateOnly?>("EstimatedCompletionDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("FamilyNotes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateTime>("LastUpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LatestRemarks")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("ReferenceNumber")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
                     b.Property<int>("StatusID")
                         .HasColumnType("integer");
 
@@ -85,15 +167,248 @@ namespace KABILIN.Migrations
 
                     b.HasKey("RequestID");
 
+                    b.HasIndex("DateFiled");
+
                     b.HasIndex("DeceasedID");
+
+                    b.HasIndex("ReferenceNumber")
+                        .IsUnique();
 
                     b.HasIndex("StatusID");
 
                     b.HasIndex("TypeID");
 
-                    b.HasIndex("UserID");
+                    b.HasIndex("UserID", "StatusID");
 
                     b.ToTable("DocumentRequests");
+                });
+
+            modelBuilder.Entity("KABILIN.Models.DocumentRequirement", b =>
+                {
+                    b.Property<int>("RequirementID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("RequirementID"));
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TypeID")
+                        .HasColumnType("integer");
+
+                    b.HasKey("RequirementID");
+
+                    b.HasIndex("TypeID");
+
+                    b.ToTable("DocumentRequirements");
+
+                    b.HasData(
+                        new
+                        {
+                            RequirementID = 1,
+                            Description = "Issued by the attending physician or health officer.",
+                            IsActive = true,
+                            IsRequired = true,
+                            Name = "Medical certificate of death",
+                            SortOrder = 1,
+                            TypeID = 1
+                        },
+                        new
+                        {
+                            RequirementID = 2,
+                            Description = "A clear copy of any government-issued ID.",
+                            IsActive = true,
+                            IsRequired = true,
+                            Name = "Valid ID of the deceased",
+                            SortOrder = 2,
+                            TypeID = 1
+                        },
+                        new
+                        {
+                            RequirementID = 3,
+                            Description = "Front and back, if applicable.",
+                            IsActive = true,
+                            IsRequired = true,
+                            Name = "Valid ID of the family representative",
+                            SortOrder = 3,
+                            TypeID = 1
+                        },
+                        new
+                        {
+                            RequirementID = 4,
+                            Description = "For example a birth or marriage certificate.",
+                            IsActive = true,
+                            IsRequired = true,
+                            Name = "Proof of relationship to the deceased",
+                            SortOrder = 4,
+                            TypeID = 1
+                        },
+                        new
+                        {
+                            RequirementID = 5,
+                            Description = "Only if the death occurred at home or without a physician.",
+                            IsActive = true,
+                            IsRequired = false,
+                            Name = "Barangay certification",
+                            SortOrder = 5,
+                            TypeID = 1
+                        },
+                        new
+                        {
+                            RequirementID = 6,
+                            Description = "A copy of the registered death certificate.",
+                            IsActive = true,
+                            IsRequired = true,
+                            Name = "Death certificate (copy)",
+                            SortOrder = 1,
+                            TypeID = 2
+                        },
+                        new
+                        {
+                            RequirementID = 7,
+                            Description = "A clear copy of a government-issued ID.",
+                            IsActive = true,
+                            IsRequired = true,
+                            Name = "Valid ID of the family representative",
+                            SortOrder = 2,
+                            TypeID = 2
+                        },
+                        new
+                        {
+                            RequirementID = 8,
+                            Description = "Cemetery or crematorium confirmation, or funeral home contract.",
+                            IsActive = true,
+                            IsRequired = true,
+                            Name = "Burial or cremation arrangement",
+                            SortOrder = 3,
+                            TypeID = 2
+                        },
+                        new
+                        {
+                            RequirementID = 9,
+                            Description = "Only if the remains will be transported to another place.",
+                            IsActive = true,
+                            IsRequired = false,
+                            Name = "Permit to transfer remains",
+                            SortOrder = 4,
+                            TypeID = 2
+                        },
+                        new
+                        {
+                            RequirementID = 10,
+                            Description = "A copy of the registered death certificate.",
+                            IsActive = true,
+                            IsRequired = true,
+                            Name = "Death certificate (copy)",
+                            SortOrder = 1,
+                            TypeID = 3
+                        },
+                        new
+                        {
+                            RequirementID = 11,
+                            Description = "The policy or certificate of coverage.",
+                            IsActive = true,
+                            IsRequired = true,
+                            Name = "Insurance policy document",
+                            SortOrder = 2,
+                            TypeID = 3
+                        },
+                        new
+                        {
+                            RequirementID = 12,
+                            Description = "A clear copy of the beneficiary's government-issued ID.",
+                            IsActive = true,
+                            IsRequired = true,
+                            Name = "Claimant's valid ID",
+                            SortOrder = 3,
+                            TypeID = 3
+                        },
+                        new
+                        {
+                            RequirementID = 13,
+                            Description = "The insurer's claim form, completed and signed.",
+                            IsActive = true,
+                            IsRequired = true,
+                            Name = "Claim form",
+                            SortOrder = 4,
+                            TypeID = 3
+                        },
+                        new
+                        {
+                            RequirementID = 14,
+                            Description = "Medical records related to the cause of death.",
+                            IsActive = true,
+                            IsRequired = false,
+                            Name = "Attending physician's statement",
+                            SortOrder = 5,
+                            TypeID = 3
+                        },
+                        new
+                        {
+                            RequirementID = 15,
+                            Description = "A copy of the registered death certificate.",
+                            IsActive = true,
+                            IsRequired = true,
+                            Name = "Death certificate (copy)",
+                            SortOrder = 1,
+                            TypeID = 4
+                        },
+                        new
+                        {
+                            RequirementID = 16,
+                            Description = "A clear copy of a government-issued ID.",
+                            IsActive = true,
+                            IsRequired = true,
+                            Name = "Valid ID of the family representative",
+                            SortOrder = 2,
+                            TypeID = 4
+                        },
+                        new
+                        {
+                            RequirementID = 17,
+                            Description = "Membership ID or number of the deceased (e.g. SSS, GSIS, PhilHealth).",
+                            IsActive = true,
+                            IsRequired = true,
+                            Name = "Proof of membership or eligibility",
+                            SortOrder = 3,
+                            TypeID = 4
+                        },
+                        new
+                        {
+                            RequirementID = 18,
+                            Description = "Receipt or billing statement from the funeral home.",
+                            IsActive = true,
+                            IsRequired = false,
+                            Name = "Funeral expense receipt or statement",
+                            SortOrder = 4,
+                            TypeID = 4
+                        },
+                        new
+                        {
+                            RequirementID = 19,
+                            Description = "Only if applying for local government assistance.",
+                            IsActive = true,
+                            IsRequired = false,
+                            Name = "Barangay certificate of indigency",
+                            SortOrder = 5,
+                            TypeID = 4
+                        });
                 });
 
             modelBuilder.Entity("KABILIN.Models.FuneralHome", b =>
@@ -104,10 +419,17 @@ namespace KABILIN.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("FuneralID"));
 
+                    b.Property<string>("City")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<string>("ContactNum")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -121,10 +443,23 @@ namespace KABILIN.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("character varying(150)");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<double?>("Latitude")
+                        .HasColumnType("double precision");
+
                     b.Property<string>("Location")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
+
+                    b.Property<double?>("Longitude")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("Services")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
 
                     b.HasKey("FuneralID");
 
@@ -164,7 +499,7 @@ namespace KABILIN.Migrations
 
                     b.HasIndex("RequestID");
 
-                    b.HasIndex("UserID");
+                    b.HasIndex("UserID", "IsRead");
 
                     b.ToTable("Notifications", (string)null);
                 });
@@ -176,6 +511,13 @@ namespace KABILIN.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("TypeID"));
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
 
                     b.Property<string>("TypeName")
                         .IsRequired()
@@ -190,17 +532,30 @@ namespace KABILIN.Migrations
                         new
                         {
                             TypeID = 1,
+                            Description = "Official record of the death, needed for most other processes.",
+                            SortOrder = 1,
                             TypeName = "Death Certificate"
                         },
                         new
                         {
                             TypeID = 2,
+                            Description = "Permission to proceed with burial, entombment or cremation.",
+                            SortOrder = 2,
                             TypeName = "Burial Permit"
                         },
                         new
                         {
                             TypeID = 3,
-                            TypeName = "Insurance Claim"
+                            Description = "Claim benefits from the deceased person's insurance policy.",
+                            SortOrder = 4,
+                            TypeName = "Insurance Claims"
+                        },
+                        new
+                        {
+                            TypeID = 4,
+                            Description = "Apply for funeral, death and other assistance benefits.",
+                            SortOrder = 3,
+                            TypeName = "Benefits and Assistance"
                         });
                 });
 
@@ -225,7 +580,7 @@ namespace KABILIN.Migrations
                         new
                         {
                             StatusID = 1,
-                            StatusName = "Pending"
+                            StatusName = "Submitted"
                         },
                         new
                         {
@@ -235,7 +590,27 @@ namespace KABILIN.Migrations
                         new
                         {
                             StatusID = 3,
-                            StatusName = "Released"
+                            StatusName = "Completed"
+                        },
+                        new
+                        {
+                            StatusID = 4,
+                            StatusName = "Under Review"
+                        },
+                        new
+                        {
+                            StatusID = 5,
+                            StatusName = "Incomplete Requirements"
+                        },
+                        new
+                        {
+                            StatusID = 6,
+                            StatusName = "Approved"
+                        },
+                        new
+                        {
+                            StatusID = 7,
+                            StatusName = "Rejected"
                         });
                 });
 
@@ -247,8 +622,18 @@ namespace KABILIN.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("HistoryID"));
 
+                    b.Property<int?>("ChangedByUserID")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("DateChanged")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("PreviousStatusID")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Remarks")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
 
                     b.Property<int>("RequestID")
                         .HasColumnType("integer");
@@ -258,11 +643,80 @@ namespace KABILIN.Migrations
 
                     b.HasKey("HistoryID");
 
+                    b.HasIndex("ChangedByUserID");
+
                     b.HasIndex("RequestID");
 
                     b.HasIndex("StatusID");
 
                     b.ToTable("StatusHistories");
+                });
+
+            modelBuilder.Entity("KABILIN.Models.UploadedDocument", b =>
+                {
+                    b.Property<int>("DocumentID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("DocumentID"));
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsCurrent")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("OriginalFileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<int>("RequestID")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RequirementID")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("StoredFileName")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("UploadedByUserID")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("VerificationRemarks")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("VerificationStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime?>("VerifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("VerifiedByUserID")
+                        .HasColumnType("integer");
+
+                    b.HasKey("DocumentID");
+
+                    b.HasIndex("RequirementID");
+
+                    b.HasIndex("UploadedByUserID");
+
+                    b.HasIndex("RequestID", "RequirementID");
+
+                    b.ToTable("UploadedDocuments");
                 });
 
             modelBuilder.Entity("KABILIN.Models.User", b =>
@@ -288,6 +742,9 @@ namespace KABILIN.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("EmailAddress")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -298,6 +755,12 @@ namespace KABILIN.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("LastLoginAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -306,6 +769,9 @@ namespace KABILIN.Migrations
                     b.Property<string>("MiddleName")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("MustChangePassword")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -318,43 +784,127 @@ namespace KABILIN.Migrations
 
                     b.HasKey("UserID");
 
+                    b.HasIndex("EmailAddress")
+                        .IsUnique();
+
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("KABILIN.Models.VerificationRecord", b =>
+                {
+                    b.Property<int>("VerificationID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("VerificationID"));
+
+                    b.Property<int>("DocumentID")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Remarks")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<int>("RequestID")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RequirementID")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Result")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime>("VerifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("VerifiedByUserID")
+                        .HasColumnType("integer");
+
+                    b.HasKey("VerificationID");
+
+                    b.HasIndex("DocumentID");
+
+                    b.HasIndex("RequestID");
+
+                    b.HasIndex("VerifiedByUserID");
+
+                    b.ToTable("VerificationRecords");
+                });
+
+            modelBuilder.Entity("KABILIN.Models.ActivityLog", b =>
+                {
+                    b.HasOne("KABILIN.Models.DocumentRequest", "Request")
+                        .WithMany()
+                        .HasForeignKey("RequestID")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("KABILIN.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Request");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("KABILIN.Models.Deceased", b =>
                 {
-                    b.HasOne("KABILIN.Models.User", null)
+                    b.HasOne("KABILIN.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("KABILIN.Models.DocumentRequest", b =>
                 {
-                    b.HasOne("KABILIN.Models.Deceased", null)
-                        .WithMany()
+                    b.HasOne("KABILIN.Models.Deceased", "Deceased")
+                        .WithMany("Requests")
                         .HasForeignKey("DeceasedID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("KABILIN.Models.Status", null)
+                    b.HasOne("KABILIN.Models.Status", "Status")
                         .WithMany()
                         .HasForeignKey("StatusID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("KABILIN.Models.RequestType", null)
+                    b.HasOne("KABILIN.Models.RequestType", "Type")
                         .WithMany()
                         .HasForeignKey("TypeID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("KABILIN.Models.User", null)
+                    b.HasOne("KABILIN.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Deceased");
+
+                    b.Navigation("Status");
+
+                    b.Navigation("Type");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("KABILIN.Models.DocumentRequirement", b =>
+                {
+                    b.HasOne("KABILIN.Models.RequestType", "Type")
+                        .WithMany("Requirements")
+                        .HasForeignKey("TypeID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Type");
                 });
 
             modelBuilder.Entity("KABILIN.Models.Notification", b =>
@@ -373,17 +923,91 @@ namespace KABILIN.Migrations
 
             modelBuilder.Entity("KABILIN.Models.StatusHistory", b =>
                 {
-                    b.HasOne("KABILIN.Models.DocumentRequest", null)
+                    b.HasOne("KABILIN.Models.User", "ChangedBy")
                         .WithMany()
+                        .HasForeignKey("ChangedByUserID")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("KABILIN.Models.DocumentRequest", "Request")
+                        .WithMany("Histories")
                         .HasForeignKey("RequestID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("KABILIN.Models.Status", null)
+                    b.HasOne("KABILIN.Models.Status", "Status")
                         .WithMany()
                         .HasForeignKey("StatusID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("ChangedBy");
+
+                    b.Navigation("Request");
+
+                    b.Navigation("Status");
+                });
+
+            modelBuilder.Entity("KABILIN.Models.UploadedDocument", b =>
+                {
+                    b.HasOne("KABILIN.Models.DocumentRequest", "Request")
+                        .WithMany("Documents")
+                        .HasForeignKey("RequestID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("KABILIN.Models.DocumentRequirement", "Requirement")
+                        .WithMany()
+                        .HasForeignKey("RequirementID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("KABILIN.Models.User", "UploadedBy")
+                        .WithMany()
+                        .HasForeignKey("UploadedByUserID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Request");
+
+                    b.Navigation("Requirement");
+
+                    b.Navigation("UploadedBy");
+                });
+
+            modelBuilder.Entity("KABILIN.Models.VerificationRecord", b =>
+                {
+                    b.HasOne("KABILIN.Models.UploadedDocument", "Document")
+                        .WithMany()
+                        .HasForeignKey("DocumentID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("KABILIN.Models.User", "VerifiedBy")
+                        .WithMany()
+                        .HasForeignKey("VerifiedByUserID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Document");
+
+                    b.Navigation("VerifiedBy");
+                });
+
+            modelBuilder.Entity("KABILIN.Models.Deceased", b =>
+                {
+                    b.Navigation("Requests");
+                });
+
+            modelBuilder.Entity("KABILIN.Models.DocumentRequest", b =>
+                {
+                    b.Navigation("Documents");
+
+                    b.Navigation("Histories");
+                });
+
+            modelBuilder.Entity("KABILIN.Models.RequestType", b =>
+                {
+                    b.Navigation("Requirements");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,292 +1,86 @@
 @model KABILIN.ViewModels.RegisterViewModel
-
 @{
-    ViewData["Title"] = "Register";
+    ViewData["Title"] = "Create an account";
+    ViewData["Wide"] = true;
     Layout = "_AuthLayout";
 }
 
-<!-- REGISTRATION ERROR NOTIFICATION -->
-<div id="registerErrorToast"
-     asp-validation-summary="All"
-     class="register-error-toast"
-     role="alert">
-</div>
+<div class="auth-card">
+    <h1>Create your account</h1>
+    <p class="lead">Register as a family representative to manage records and document requests in one place.</p>
 
-<div class="register-wrapper">
+    <form asp-controller="Account" asp-action="Register" method="post" novalidate>
+        <div asp-validation-summary="ModelOnly" class="alert alert-error mb-16" role="alert"></div>
 
-    <div class="glass-card register-card">
-
-        <!-- HEADER -->
-
-        <div class="auth-header">
-
-            <h2>Create an Account</h2>
-
-            <p>
-                Join KABILIN to get guided support,
-                manage your requests, and access
-                essential services.
-            </p>
-
+        <div class="form-section">
+            <h3>Your details</h3>
+            <p class="support">Use the name and contact details we should use when updating you.</p>
+            <div class="form-grid">
+                <div class="field">
+                    <label asp-for="FirstName" class="label">First name <span class="req">*</span></label>
+                    <input asp-for="FirstName" class="input" autocomplete="given-name" />
+                    <span asp-validation-for="FirstName" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="LastName" class="label">Last name <span class="req">*</span></label>
+                    <input asp-for="LastName" class="input" autocomplete="family-name" />
+                    <span asp-validation-for="LastName" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="MiddleName" class="label">Middle name <span class="opt">(optional)</span></label>
+                    <input asp-for="MiddleName" class="input" autocomplete="additional-name" />
+                    <span asp-validation-for="MiddleName" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="ContactNum" class="label">Contact number <span class="req">*</span></label>
+                    <input asp-for="ContactNum" class="input" type="tel" placeholder="09XX XXX XXXX" autocomplete="tel" />
+                    <span asp-validation-for="ContactNum" class="field-error"></span>
+                </div>
+                <div class="field full">
+                    <label asp-for="Address" class="label">Address <span class="req">*</span></label>
+                    <input asp-for="Address" class="input" autocomplete="street-address" />
+                    <span asp-validation-for="Address" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="City" class="label">City or municipality <span class="req">*</span></label>
+                    <input asp-for="City" class="input" autocomplete="address-level2" />
+                    <span asp-validation-for="City" class="field-error"></span>
+                </div>
+            </div>
         </div>
 
-
-        <!-- REGISTRATION FORM -->
-
-        <form asp-controller="Account"
-              asp-action="Register"
-              method="post">
-
-            @Html.AntiForgeryToken()
-
-            <div asp-validation-summary="ModelOnly"
-                 class="error-message">
-            </div>
-
-
+        <div class="form-section">
+            <h3>Sign-in details</h3>
             <div class="form-grid">
-
-                <!-- FIRST NAME -->
-
-                <div class="form-group">
-
-                    <label asp-for="FirstName">
-                        First Name
-                    </label>
-
-                    <input asp-for="FirstName"
-                           class="glass-input"
-                           placeholder="First name" />
-
-                    <span asp-validation-for="FirstName"
-                          class="field-error">
-                    </span>
-
+                <div class="field full">
+                    <label asp-for="EmailAddress" class="label">Email address <span class="req">*</span></label>
+                    <input asp-for="EmailAddress" class="input" type="email" autocomplete="email" />
+                    <span asp-validation-for="EmailAddress" class="field-error"></span>
                 </div>
-
-
-                <!-- LAST NAME -->
-
-                <div class="form-group">
-
-                    <label asp-for="LastName">
-                        Last Name
-                    </label>
-
-                    <input asp-for="LastName"
-                           class="glass-input"
-                           placeholder="Last name" />
-
-                    <span asp-validation-for="LastName"
-                          class="field-error">
-                    </span>
-
+                <div class="field">
+                    <label asp-for="Password" class="label">Password <span class="req">*</span></label>
+                    <div class="password-wrap">
+                        <input asp-for="Password" class="input" type="password" autocomplete="new-password" />
+                        <button type="button" class="password-toggle" data-password-toggle aria-label="Show password" aria-pressed="false">@Html.Icon("eye")</button>
+                    </div>
+                    <span class="hint">At least 8 characters.</span>
+                    <span asp-validation-for="Password" class="field-error"></span>
                 </div>
-
-
-                <!-- MIDDLE NAME -->
-
-                <div class="form-group">
-
-                    <label asp-for="MiddleName">
-                        Middle Name (Optional)
-                    </label>
-
-                    <input asp-for="MiddleName"
-                           class="glass-input"
-                           placeholder="Middle name" />
-
+                <div class="field">
+                    <label asp-for="ConfirmPassword" class="label">Confirm password <span class="req">*</span></label>
+                    <input asp-for="ConfirmPassword" class="input" type="password" autocomplete="new-password" />
+                    <span asp-validation-for="ConfirmPassword" class="field-error"></span>
                 </div>
-
-
-                <!-- CONTACT NUMBER -->
-
-                <div class="form-group">
-
-                    <label asp-for="ContactNum">
-                        Contact Number
-                    </label>
-
-                    <input asp-for="ContactNum"
-                           class="glass-input"
-                           type="tel"
-                           placeholder="09XXXXXXXXX" />
-
-                    <span asp-validation-for="ContactNum"
-                          class="field-error">
-                    </span>
-
-                </div>
-
-
-                <!-- EMAIL ADDRESS -->
-
-                <div class="form-group full-width">
-
-                    <label asp-for="EmailAddress">
-                        Email Address
-                    </label>
-
-                    <input asp-for="EmailAddress"
-                           class="glass-input"
-                           type="email"
-                           placeholder="Enter your email"
-                           autocomplete="email" />
-
-                    <span asp-validation-for="EmailAddress"
-                          class="field-error">
-                    </span>
-
-                </div>
-
-
-                <!-- ADDRESS -->
-
-                <div class="form-group">
-
-                    <label asp-for="Address">
-                        Address
-                    </label>
-
-                    <input asp-for="Address"
-                           class="glass-input"
-                           placeholder="Street / Barangay" />
-
-                    <span asp-validation-for="Address"
-                          class="field-error">
-                    </span>
-
-                </div>
-
-
-                <!-- CITY -->
-
-                <div class="form-group">
-
-                    <label asp-for="City">
-                        City
-                    </label>
-
-                    <input asp-for="City"
-                           class="glass-input"
-                           placeholder="City" />
-
-                    <span asp-validation-for="City"
-                          class="field-error">
-                    </span>
-
-                </div>
-
-
-                <!-- PASSWORD -->
-
-                <div class="form-group">
-
-                    <label asp-for="Password">
-                        Password
-                    </label>
-
-                    <input asp-for="Password"
-                           class="glass-input"
-                           type="password"
-                           placeholder="Minimum of 8 characters"
-                           autocomplete="new-password" />
-
-                    <span asp-validation-for="Password"
-                          class="field-error">
-                    </span>
-
-                </div>
-
-                <!-- CONFIRM PASSWORD -->
-
-                <div class="form-group">
-
-                    <label asp-for="ConfirmPassword">
-                        Confirm Password
-                    </label>
-
-                    <input asp-for="ConfirmPassword"
-                           class="glass-input"
-                           type="password"
-                           placeholder="Confirm password"
-                           autocomplete="new-password" />
-
-                    <span asp-validation-for="ConfirmPassword"
-                          class="field-error">
-                    </span>
-
-                </div>
-
             </div>
+        </div>
 
-
-            <!-- REGISTER BUTTON -->
-
-            <button type="submit"
-                    class="primary-button register-button">
-
-                Register
-
-            </button>
-
-        </form>
-
-
-        <!-- LOGIN LINK -->
-
-        <p class="auth-footer">
-
-            Already have an account?
-
-            <a asp-controller="Account"
-               asp-action="Login">
-
-                Log In
-
-            </a>
-
-        </p>
-
-    </div>
-
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Create account</button>
+            <a class="btn btn-ghost" asp-controller="Account" asp-action="Login">I already have an account</a>
+        </div>
+    </form>
 </div>
 
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-
-        const toast = document.getElementById("registerErrorToast");
-        const form = document.querySelector(".register-card form");
-
-        if (!toast) return;
-
-        let hideTimer;
-
-        function showErrorToast() {
-
-            if (!toast.classList.contains("validation-summary-errors")) {
-                return;
-            }
-
-            toast.classList.remove("toast-hide");
-
-            clearTimeout(hideTimer);
-
-            hideTimer = setTimeout(function () {
-                toast.classList.add("toast-hide");
-            }, 3000);
-        }
-
-        // Show errors returned by the server
-        showErrorToast();
-
-        // Also handle client-side form validation
-        if (form) {
-            form.addEventListener("submit", function () {
-                setTimeout(showErrorToast, 100);
-            });
-        }
-
-    });
-</script>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

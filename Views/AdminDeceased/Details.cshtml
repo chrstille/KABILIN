@@ -1,0 +1,24 @@
+@model AdminDeceasedDetailsViewModel
+@{ var d = Model.Record; ViewData["Title"] = d.FullName; ViewData["Nav"] = "deceased"; }
+<div class="breadcrumb"><a asp-action="Index">Deceased records</a> @Html.Icon("chevron-right", "icon-sm") <span>@d.FullName</span></div>
+<div class="page-header"><div><h1>@d.FullName</h1><p>Registered @Ph.Date(d.CreatedAt)</p></div></div>
+<div class="split">
+    <div class="card"><div class="card-header"><h3>@Html.Icon("files") Document requests</h3></div>
+        @if (Model.Requests.Count == 0) { <div class="card-body"><p class="muted">No requests have been filed for this record.</p></div> }
+        else {
+            <div class="card-body flush table-wrap"><table class="table responsive"><thead><tr><th>Reference</th><th>Request</th><th>Filed</th><th>Status</th></tr></thead><tbody>
+            @foreach (var r in Model.Requests) {
+                <tr><td class="cell-main" data-label="Reference"><a class="cell-title" asp-controller="AdminRequests" asp-action="Details" asp-route-id="@r.RequestID">@r.ReferenceNumber</a></td><td data-label="Request">@r.TypeName</td><td data-label="Filed" class="nowrap">@Ph.Date(r.DateFiled)</td><td data-label="Status">@Html.StatusBadge(r.StatusName)</td></tr>
+            }</tbody></table></div>
+        }
+    </div>
+    <div class="stack">
+        <div class="card"><div class="card-header"><h3>@Html.Icon("info") Details</h3></div><div class="card-body"><dl class="kv">
+            <dt>Date of birth</dt><dd>@Ph.Date(d.DateOfBirth)</dd><dt>Date of death</dt><dd>@Ph.Date(d.DateOfDeath)</dd>
+            <dt>Place of death</dt><dd>@(d.PlaceOfDeath ?? "-")</dd><dt>Cause of death</dt><dd>@(d.CauseOfDeath ?? "-")</dd>
+            <dt>Relationship</dt><dd>@(d.Relationship ?? "-")</dd></dl></div></div>
+        <div class="card"><div class="card-header"><h3>@Html.Icon("user-round") Family representative</h3></div><div class="card-body"><dl class="kv">
+            <dt>Name</dt><dd><a asp-controller="AdminUsers" asp-action="Details" asp-route-id="@d.UserID">@d.User!.FullName</a></dd>
+            <dt>Contact</dt><dd>@d.User.ContactNum</dd><dt>Email</dt><dd>@d.User.EmailAddress</dd></dl></div></div>
+    </div>
+</div>

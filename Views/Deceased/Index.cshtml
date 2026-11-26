@@ -1,0 +1,60 @@
+@model List<DeceasedListItem>
+@{
+    ViewData["Title"] = "Deceased Records";
+    ViewData["Nav"] = "deceased";
+    var q = ViewData["Query"] as string;
+}
+<div class="page-header">
+    <div>
+        <h1>Deceased records</h1>
+        <p>Each document request is linked to one of these records.</p>
+    </div>
+    <div class="actions"><a class="btn btn-primary" asp-action="Create">@Html.Icon("plus") Add record</a></div>
+</div>
+
+<div class="card">
+    <form method="get" class="toolbar">
+        <div class="field grow">
+            <label class="label" for="q">Search</label>
+            <div class="search-input">@Html.Icon("search")<input class="input" id="q" name="q" value="@q" placeholder="Search by name" /></div>
+        </div>
+        <button class="btn btn-secondary" type="submit">Search</button>
+        @if (!string.IsNullOrEmpty(q)) { <a class="btn btn-ghost" asp-action="Index">Clear</a> }
+    </form>
+
+    @if (Model.Count == 0)
+    {
+        <div class="empty">
+            <span class="empty-icon">@Html.Icon("book-user", "icon-lg")</span>
+            <h3>@(string.IsNullOrEmpty(q) ? "No records yet" : "No matching records")</h3>
+            <p>@(string.IsNullOrEmpty(q) ? "Add the details of your loved one to start requesting documents." : "Try a different name.")</p>
+            @if (string.IsNullOrEmpty(q)) { <a class="btn btn-primary" asp-action="Create">Add a deceased record</a> }
+        </div>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table class="table responsive">
+                <thead><tr><th>Name</th><th>Born</th><th>Died</th><th>Place of death</th><th>Requests</th><th></th></tr></thead>
+                <tbody>
+                @foreach (var d in Model)
+                {
+                    <tr>
+                        <td class="cell-main" data-label="Name"><a class="cell-title" asp-action="Details" asp-route-id="@d.DeceasedID">@d.FullName</a></td>
+                        <td data-label="Born" class="nowrap">@Ph.Date(d.DateOfBirth)</td>
+                        <td data-label="Died" class="nowrap">@Ph.Date(d.DateOfDeath)</td>
+                        <td data-label="Place">@(d.PlaceOfDeath ?? "-")</td>
+                        <td data-label="Requests">@d.RequestCount</td>
+                        <td class="cell-actions">
+                            <div class="actions">
+                                <a class="btn btn-secondary btn-sm" asp-controller="Requests" asp-action="New" asp-route-deceasedId="@d.DeceasedID">New request</a>
+                                <a class="btn btn-ghost btn-sm" asp-action="Edit" asp-route-id="@d.DeceasedID">Edit</a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

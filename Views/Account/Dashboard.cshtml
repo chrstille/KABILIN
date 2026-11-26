@@ -1,46 +1,160 @@
+@model DashboardViewModel
 @{
     ViewData["Title"] = "Dashboard";
-    Layout = "_AuthLayout";
+    ViewData["Nav"] = "dashboard";
 }
 
-<div class="glass-card dashboard-card">
+<div class="page-header">
+    <div>
+        <h1>Hello, @Model.FirstName</h1>
+        <p>Here is where things stand. We are sorry for your loss and will help you through each step.</p>
+    </div>
+    <div class="actions">
+        <a class="btn btn-primary" asp-controller="Requests" asp-action="New">@Html.Icon("plus") New request</a>
+    </div>
+</div>
 
-    <h1>Welcome to KABILIN!</h1>
+@if (Model.NeedAttention > 0)
+{
+    <div class="alert alert-warning mb-16" role="alert">
+        @Html.Icon("triangle-alert")
+        <div>
+            <strong>@Model.NeedAttention request@(Model.NeedAttention == 1 ? "" : "s") need your attention.</strong>
+            Some documents must be corrected or submitted. <a asp-controller="Requests" asp-action="Track">Review now</a>
+        </div>
+    </div>
+}
 
-    <p>
-        Hello, @User.Identity?.Name!
-    </p>
+<div class="grid grid-5 mb-16">
+    <a class="card stat" asp-controller="Deceased" asp-action="Index">
+        <span class="stat-icon">@Html.Icon("book-user")</span>
+        <span><div class="stat-value">@Model.TotalDeceased</div><div class="stat-label">Deceased records</div></span>
+    </a>
+    <a class="card stat" asp-controller="Requests" asp-action="Index">
+        <span class="stat-icon">@Html.Icon("files")</span>
+        <span><div class="stat-value">@Model.TotalRequests</div><div class="stat-label">Document requests</div></span>
+    </a>
+    <a class="card stat" asp-controller="Requests" asp-action="Track" asp-route-filter="pending">
+        <span class="stat-icon">@Html.Icon("clock")</span>
+        <span><div class="stat-value">@Model.PendingRequests</div><div class="stat-label">Pending</div></span>
+    </a>
+    <a class="card stat" asp-controller="Requests" asp-action="Track" asp-route-filter="processing">
+        <span class="stat-icon">@Html.Icon("loader")</span>
+        <span><div class="stat-value">@Model.ProcessingRequests</div><div class="stat-label">In processing</div></span>
+    </a>
+    <a class="card stat" asp-controller="Requests" asp-action="Track" asp-route-filter="completed">
+        <span class="stat-icon">@Html.Icon("circle-check")</span>
+        <span><div class="stat-value">@Model.CompletedRequests</div><div class="stat-label">Completed</div></span>
+    </a>
+</div>
 
-    <p>
-        You have successfully logged into your account.
-    </p>
+<div class="card mb-16">
+    <div class="card-header"><h3>@Html.Icon("file-plus") Start a request</h3></div>
+    <div class="card-body">
+        <div class="grid grid-4 tiles">
+            @foreach (var t in Model.RequestTypes)
+            {
+                <a class="choice-box" style="text-decoration:none;color:inherit" asp-controller="Requests" asp-action="New" asp-route-typeId="@t.TypeID">
+                    <span class="stat-icon">@Html.Icon(UiHelpers.TypeIcon(t.TypeID))</span>
+                    <span><strong>@t.TypeName</strong><span class="support">@t.Description</span></span>
+                </a>
+            }
+        </div>
+    </div>
+</div>
 
-    @if (User.IsInRole("Admin"))
-    {
-        <p>
-            Account Type: Administrator
-        </p>
-    }
-    else
-    {
-        <p>
-            Account Type: Family
-        </p>
-    }
+<div class="split">
+    <div class="stack">
+        <div class="card">
+            <div class="card-header">
+                <h3>@Html.Icon("files") Recent requests</h3>
+                <a asp-controller="Requests" asp-action="Track" class="support">View all</a>
+            </div>
+            @if (Model.RecentRequests.Count == 0)
+            {
+                <div class="card-body">
+                    <div class="empty">
+                        <span class="empty-icon">@Html.Icon("file-plus", "icon-lg")</span>
+                        <h3>No requests yet</h3>
+                        <p>Add a deceased-person record, then choose the document or service you need.</p>
+                        <a class="btn btn-primary" asp-controller="Deceased" asp-action="Create">Add a deceased record</a>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="card-body flush table-wrap">
+                    <table class="table responsive">
+                        <thead><tr><th>Reference</th><th>Request</th><th>Filed</th><th>Status</th></tr></thead>
+                        <tbody>
+                        @foreach (var r in Model.RecentRequests)
+                        {
+                            <tr>
+                                <td class="cell-main" data-label="Reference"><a class="cell-title" asp-controller="Requests" asp-action="Details" asp-route-id="@r.RequestID">@r.ReferenceNumber</a></td>
+                                <td data-label="Request"><span class="cell-stack"><div class="cell-title">@r.TypeName</div><div class="cell-sub">@r.DeceasedName</div></span></td>
+                                <td data-label="Filed" class="nowrap">@Ph.Date(r.DateFiled)</td>
+                                <td data-label="Status">@Html.StatusBadge(r.StatusName)</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
 
-    <form asp-controller="Account"
-          asp-action="Logout"
-          method="post">
+        <div class="card">
+            <div class="card-header"><h3>@Html.Icon("history") Recent activity</h3></div>
+            <div class="card-body">
+                @if (Model.RecentActivities.Count == 0)
+                {
+                    <p class="muted">Activity on your requests will appear here.</p>
+                }
+                else
+                {
+                    <ul class="timeline">
+                        @foreach (var a in Model.RecentActivities)
+                        {
+                            <li>
+                                <span class="pip"></span>
+                                <div class="t-title">@a.Action</div>
+                                <div class="t-meta">@a.Reference &middot; @Ph.Ago(a.CreatedAt)</div>
+                                <div class="t-text">@a.Description</div>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+    </div>
 
-        @Html.AntiForgeryToken()
-
-        <button type="submit"
-                class="primary-button">
-
-            Log Out
-
-        </button>
-
-    </form>
-
+    <div class="card">
+        <div class="card-header">
+            <h3>@Html.Icon("bell") Notifications</h3>
+            <a asp-controller="Notifications" asp-action="Index" class="support">
+                @(Model.UnreadNotifications > 0 ? $"{Model.UnreadNotifications} unread" : "View all")
+            </a>
+        </div>
+        <div class="card-body flush">
+            @if (Model.RecentNotifications.Count == 0)
+            {
+                <div class="card-body"><p class="muted">You have no notifications yet.</p></div>
+            }
+            else
+            {
+                <ul class="list">
+                    @foreach (var n in Model.RecentNotifications)
+                    {
+                        <li class="list-item @(n.IsRead ? "" : "unread")">
+                            @if (!n.IsRead) { <span class="dot-unread" style="margin-top:7px" title="Unread"></span> }
+                            <div class="grow">
+                                <div class="list-title">@n.Title</div>
+                                <div class="support">@n.Message</div>
+                                <div class="small muted mt-8">@Ph.Ago(n.CreatedAt)</div>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
 </div>

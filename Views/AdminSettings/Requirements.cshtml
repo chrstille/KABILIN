@@ -1,0 +1,34 @@
+@model List<DocumentRequirement>
+@{
+    ViewData["Title"] = "Document requirements"; ViewData["Nav"] = "settings";
+    var types = (List<RequestType>)ViewData["Types"]!;
+}
+<div class="breadcrumb"><a asp-action="Index">Settings</a> @Html.Icon("chevron-right", "icon-sm") <span>Document requirements</span></div>
+<div class="page-header">
+    <div><h1>Document requirements</h1><p>Disabled requirements no longer appear on new requests. Existing uploads are kept.</p></div>
+    <div class="actions"><a class="btn btn-primary" asp-action="RequirementCreate">@Html.Icon("plus") Add requirement</a></div>
+</div>
+<div class="stack">
+@foreach (var t in types)
+{
+    var items = Model.Where(r => r.TypeID == t.TypeID).ToList();
+    <div class="card">
+        <div class="card-header"><h3>@Html.Icon(UiHelpers.TypeIcon(t.TypeID)) @t.TypeName</h3><a class="support" asp-action="RequirementCreate" asp-route-typeId="@t.TypeID">Add to this type</a></div>
+        <div class="card-body flush">
+        @if (items.Count == 0) { <div class="card-body"><p class="muted">No requirements yet.</p></div> }
+        else
+        {
+            <div class="table-wrap"><table class="table responsive"><thead><tr><th>Document</th><th>Type</th><th>Order</th><th>Status</th><th></th></tr></thead><tbody>
+            @foreach (var r in items)
+            {
+                <tr><td class="cell-main" data-label="Document"><span class="cell-title">@r.Name</span><div class="cell-sub">@r.Description</div></td>
+                <td data-label="Type">@(r.IsRequired ? "Required" : "Optional")</td><td data-label="Order">@r.SortOrder</td>
+                <td data-label="Status">@if (r.IsActive) { <span class="badge badge-approved">Active</span> } else { <span class="badge badge-muted">Disabled</span> }</td>
+                <td class="cell-actions"><div class="actions"><a class="btn btn-secondary btn-sm" asp-action="RequirementEdit" asp-route-id="@r.RequirementID">Edit</a>
+                    <form asp-action="RequirementSetActive" asp-route-id="@r.RequirementID" asp-route-active="@(!r.IsActive)" method="post"><button type="submit" class="btn btn-ghost btn-sm">@(r.IsActive ? "Disable" : "Enable")</button></form></div></td></tr>
+            }</tbody></table></div>
+        }
+        </div>
+    </div>
+}
+</div>

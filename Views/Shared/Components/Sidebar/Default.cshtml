@@ -1,0 +1,58 @@
+@model KABILIN.Components.SidebarModel
+@{
+    string Cls(string key) => Model.Active == key ? "nav-item active" : "nav-item";
+    string Cur(string key) => Model.Active == key ? "page" : "";
+}
+<aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <a class="sidebar-brand" href="@Url.Action(Model.IsAdmin ? "Index" : "Dashboard", Model.IsAdmin ? "AdminDashboard" : "Account")">
+        <img src="~/images/kabilin-logo.png" alt="" />
+        <span>
+            <span class="name">KABILIN</span><br />
+            <span class="sub">@(Model.IsAdmin ? "Administration" : "Family Portal")</span>
+        </span>
+    </a>
+
+    <div class="nav-caption">Menu</div>
+    <nav class="nav">
+        @if (Model.IsAdmin)
+        {
+            <a class="@Cls("dashboard")" aria-current="@Cur("dashboard")" asp-controller="AdminDashboard" asp-action="Index">@Html.Icon("layout-dashboard") Dashboard</a>
+            <a class="@Cls("users")" aria-current="@Cur("users")" asp-controller="AdminUsers" asp-action="Index">@Html.Icon("users") Users</a>
+            <a class="@Cls("deceased")" aria-current="@Cur("deceased")" asp-controller="AdminDeceased" asp-action="Index">@Html.Icon("book-user") Deceased Records</a>
+            <a class="@Cls("requests")" aria-current="@Cur("requests")" asp-controller="AdminRequests" asp-action="Index">@Html.Icon("file-text") Document Requests</a>
+            <a class="@Cls("funeral")" aria-current="@Cur("funeral")" asp-controller="AdminFuneralHomes" asp-action="Index">@Html.Icon("building-2") Funeral Homes</a>
+            <a class="@Cls("notifications")" aria-current="@Cur("notifications")" asp-controller="AdminNotifications" asp-action="Index">@Html.Icon("bell") Notifications</a>
+            <a class="@Cls("activity")" aria-current="@Cur("activity")" asp-controller="AdminActivity" asp-action="Index">@Html.Icon("history") Activity Logs</a>
+            <a class="@Cls("settings")" aria-current="@Cur("settings")" asp-controller="AdminSettings" asp-action="Index">@Html.Icon("settings") Settings</a>
+        }
+        else
+        {
+            <a class="@Cls("dashboard")" aria-current="@Cur("dashboard")" asp-controller="Account" asp-action="Dashboard">@Html.Icon("layout-dashboard") Dashboard</a>
+            <a class="@Cls("deceased")" aria-current="@Cur("deceased")" asp-controller="Deceased" asp-action="Index">@Html.Icon("book-user") Deceased Records</a>
+            <a class="@Cls("requests")" aria-current="@Cur("requests")" asp-controller="Requests" asp-action="Index">@Html.Icon("file-text") Document Requests</a>
+            <a class="@Cls("track")" aria-current="@Cur("track")" asp-controller="Requests" asp-action="Track">@Html.Icon("route") Track Requests</a>
+            <a class="@Cls("funeral")" aria-current="@Cur("funeral")" asp-controller="FuneralHomes" asp-action="Index">@Html.Icon("building-2") Funeral Homes</a>
+            <a class="@Cls("notifications")" aria-current="@Cur("notifications")" asp-controller="Notifications" asp-action="Index">
+                @Html.Icon("bell") Notifications
+                @if (Model.UnreadNotifications > 0)
+                {
+                    <span class="nav-count" aria-label="@Model.UnreadNotifications unread">@Model.UnreadNotifications</span>
+                }
+            </a>
+            <a class="@Cls("profile")" aria-current="@Cur("profile")" asp-controller="Account" asp-action="Profile">@Html.Icon("user-round") My Profile</a>
+        }
+    </nav>
+
+    <div class="sidebar-footer">
+        <div class="user-chip">
+            <span class="avatar" aria-hidden="true">@Html.Raw(System.Net.WebUtility.HtmlEncode(UiHelpers.Initials(Model.FullName)))</span>
+            <span class="who">
+                <strong>@Model.FullName</strong>
+                <span>@Model.Email</span>
+            </span>
+        </div>
+        <form asp-controller="Account" asp-action="Logout" method="post">
+            <button type="submit" class="btn btn-secondary btn-block">@Html.Icon("log-out") Log out</button>
+        </form>
+    </div>
+</aside>

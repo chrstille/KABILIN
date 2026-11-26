@@ -1,0 +1,10 @@
+@model List<ProgressStep>
+<ol class="tracker" style="list-style:none;padding:0" aria-label="Request progress">
+    @foreach (var s in Model)
+    {
+        <li class="tracker-step @s.State" @(s.State is "current" or "attention" ? "aria-current=step" : "")>
+            <span class="node">@if (s.State == "done") { @Html.Icon("check") } else if (s.State == "rejected") { @Html.Icon("x") }</span>
+            @s.Label
+        </li>
+    }
+</ol>

@@ -1,0 +1,93 @@
+@model List<FuneralHome>
+@{
+    ViewData["Title"] = "Funeral Homes";
+    ViewData["Nav"] = "funeral";
+    var q = ViewData["Query"] as string;
+    var city = ViewData["City"] as string;
+    var cities = (List<string>)ViewData["Cities"]!;
+    var totalActive = (int)ViewData["TotalActive"]!;
+    var mapData = Model.Where(h => h.HasCoordinates).Select(h => new
+    {
+        id = h.FuneralID, name = h.FuneralName, address = h.Location, contact = h.ContactNum,
+        lat = h.Latitude, lng = h.Longitude,
+        url = Url.Action("Details", "FuneralHomes", new { id = h.FuneralID })
+    });
+}
+@section Styles { <link rel="stylesheet" href="~/lib/leaflet/leaflet.css" /> }
+
+<div class="page-header">
+    <div>
+        <h1>Funeral homes</h1>
+        <p>Browse funeral homes and contact them directly. KABILIN is a directory only; it does not handle bookings or payments.</p>
+    </div>
+</div>
+
+<div class="card mb-16">
+    <form method="get" class="toolbar" style="border-bottom:0">
+        <div class="field grow">
+            <label class="label" for="q">Search by name</label>
+            <div class="search-input">@Html.Icon("search")<input id="q" name="q" class="input" value="@q" placeholder="Funeral home name" /></div>
+        </div>
+        <div class="field">
+            <label class="label" for="city">Location</label>
+            <select id="city" name="city" class="select">
+                <option value="">All locations</option>
+                @foreach (var c in cities) { <option value="@c" selected="@(city == c)">@c</option> }
+            </select>
+        </div>
+        <button class="btn btn-secondary" type="submit">Search</button>
+        @if (!string.IsNullOrEmpty(q) || !string.IsNullOrEmpty(city)) { <a class="btn btn-ghost" asp-action="Index">Clear</a> }
+    </form>
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="card"><div class="empty">
+        <span class="empty-icon">@Html.Icon("building-2", "icon-lg")</span>
+        @if (totalActive == 0)
+        {
+            <h3>No funeral homes listed yet</h3>
+            <p>The KABILIN team is still adding funeral homes to the directory. Please check back soon.</p>
+        }
+        else
+        {
+            <h3>No matching funeral homes</h3>
+            <p>Try a different name or location.</p>
+            <a class="btn btn-secondary" asp-action="Index">Show all</a>
+        }
+    </div></div>
+}
+else
+{
+    <div class="directory">
+        <div class="stack">
+            <p class="support">@Model.Count funeral home@(Model.Count == 1 ? "" : "s")</p>
+            @foreach (var h in Model)
+            {
+                <article class="home-card" id="home-@h.FuneralID">
+                    <h3><a asp-action="Details" asp-route-id="@h.FuneralID">@h.FuneralName</a></h3>
+                    <div class="meta-line">@Html.Icon("map-pin")<span class="v">@h.Location</span></div>
+                    <div class="meta-line">@Html.Icon("phone")<a href="tel:@h.ContactNum">@h.ContactNum</a></div>
+                    @if (h.ServiceList.Any())
+                    {
+                        <div class="tags">@foreach (var s in h.ServiceList.Take(5)) { <span class="tag">@s</span> }</div>
+                    }
+                    <div class="row mt-16">
+                        <a class="btn btn-secondary btn-sm" asp-action="Details" asp-route-id="@h.FuneralID">View details</a>
+                        @if (h.HasCoordinates) { <button type="button" class="btn btn-ghost btn-sm" data-focus-home="@h.FuneralID">@Html.Icon("map", "icon-sm") Show on map</button> }
+                    </div>
+                </article>
+            }
+        </div>
+        <div class="map-panel">
+            <div id="funeralMap" class="map" role="region" aria-label="Map of funeral homes"></div>
+            @if (!mapData.Any()) { <p class="support mt-8">None of these listings have a map location yet.</p> }
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script type="application/json" id="funeral-data">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(mapData))</script>
+    <script src="~/lib/leaflet/leaflet.js"></script>
+    <script src="~/js/funeral-map.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,64 @@
+@model DeceasedFormViewModel
+@{
+    var editing = Model.DeceasedID > 0;
+    ViewData["Title"] = editing ? "Edit record" : "Add deceased record";
+    ViewData["Nav"] = "deceased";
+}
+<div class="breadcrumb"><a asp-action="Index">Deceased records</a> @Html.Icon("chevron-right", "icon-sm") <span>@(editing ? "Edit" : "Add")</span></div>
+<div class="page-header">
+    <div>
+        <h1>@(editing ? "Edit record" : "Add a deceased record")</h1>
+        <p>These details are used when processing your document requests, so please make sure they are accurate.</p>
+    </div>
+</div>
+
+<div class="card" style="max-width:820px">
+    <div class="card-body">
+        <form method="post" novalidate>
+            <div asp-validation-summary="ModelOnly" class="alert alert-error mb-16"></div>
+
+            <div class="form-section">
+                <h3>Full name</h3>
+                <p class="support">As written on official documents.</p>
+                <div class="form-grid">
+                    <div class="field"><label asp-for="FirstName" class="label">First name <span class="req">*</span></label><input asp-for="FirstName" class="input" /><span asp-validation-for="FirstName" class="field-error"></span></div>
+                    <div class="field"><label asp-for="LastName" class="label">Last name <span class="req">*</span></label><input asp-for="LastName" class="input" /><span asp-validation-for="LastName" class="field-error"></span></div>
+                    <div class="field"><label asp-for="MiddleName" class="label">Middle name <span class="opt">(optional)</span></label><input asp-for="MiddleName" class="input" /></div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Dates and place</h3>
+                <div class="form-grid">
+                    <div class="field"><label asp-for="DateOfBirth" class="label">Date of birth <span class="req">*</span></label><input asp-for="DateOfBirth" class="input" type="date" /><span asp-validation-for="DateOfBirth" class="field-error"></span></div>
+                    <div class="field"><label asp-for="DateOfDeath" class="label">Date of death <span class="req">*</span></label><input asp-for="DateOfDeath" class="input" type="date" /><span asp-validation-for="DateOfDeath" class="field-error"></span></div>
+                    <div class="field full"><label asp-for="PlaceOfDeath" class="label">Place of death <span class="req">*</span></label><input asp-for="PlaceOfDeath" class="input" placeholder="Hospital, home address or city" /><span asp-validation-for="PlaceOfDeath" class="field-error"></span></div>
+                    <div class="field full"><label asp-for="CauseOfDeath" class="label">Cause of death <span class="opt">(optional)</span></label><input asp-for="CauseOfDeath" class="input" /></div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Your relationship</h3>
+                <div class="form-grid">
+                    <div class="field">
+                        <label asp-for="Relationship" class="label">Relationship to the deceased <span class="req">*</span></label>
+                        <select asp-for="Relationship" class="select">
+                            <option value="">Select...</option>
+                            @foreach (var r in DeceasedFormViewModel.RelationshipOptions)
+                            {
+                                <option value="@r" selected="@(Model.Relationship == r)">@r</option>
+                            }
+                        </select>
+                        <span asp-validation-for="Relationship" class="field-error"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">@(editing ? "Save changes" : "Save record")</button>
+                <a class="btn btn-ghost" asp-action="Index">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

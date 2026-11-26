@@ -1,148 +1,46 @@
 @model KABILIN.ViewModels.LoginViewModel
-
 @{
-    ViewData["Title"] = "Log In";
+    ViewData["Title"] = "Log in";
     Layout = "_AuthLayout";
 }
 
- @if (TempData["SuccessMessage"] is string successMessage)
-{
-            <div id="successToast" class="success-toast" role="status">
-                @successMessage
-            </div>
-        }
+<div class="auth-card">
+    <h1>Welcome back</h1>
+    <p class="lead">Log in to manage your requests and see their progress.</p>
 
+    <form asp-controller="Account" asp-action="Login" method="post" class="form-stack" novalidate>
+        <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
 
-<!-- LOGIN ERROR NOTIFICATION -->
-<div id="loginErrorToast"
-     asp-validation-summary="ModelOnly"
-     class="login-error-toast"
-     role="alert">
-</div>
+        <div asp-validation-summary="ModelOnly" class="alert alert-error" role="alert"></div>
 
-
-<div class="login-wrapper">
-
-    <!-- =====================================
-         RIGHT SIDE - LOGIN FORM
-    ====================================== -->
-
-    <div class="glass-card login-card">
-
-        <div class="auth-header">
-
-            <h2>Log In</h2>
-            
+        <div class="field">
+            <label asp-for="EmailAddress" class="label">Email address</label>
+            <input asp-for="EmailAddress" class="input" type="email" placeholder="you@example.com" autocomplete="email" autofocus />
+            <span asp-validation-for="EmailAddress" class="field-error"></span>
         </div>
 
-        <form asp-controller="Account"
-              asp-action="Login"
-              method="post">
-
-            @Html.AntiForgeryToken()
-
-            <!-- EMAIL -->
-
-            <div class="form-group">
-
-                <label asp-for="EmailAddress">
-                    Email Address
-                </label>
-
-                <input asp-for="EmailAddress"
-                       class="glass-input"
-                       type="email"
-                       placeholder="Enter your email"
-                       autocomplete="email" />
-
-                <span asp-validation-for="EmailAddress"
-                      class="field-error">
-                </span>
-
+        <div class="field">
+            <label asp-for="Password" class="label">Password</label>
+            <div class="password-wrap">
+                <input asp-for="Password" class="input" type="password" placeholder="Enter your password" autocomplete="current-password" />
+                <button type="button" class="password-toggle" data-password-toggle aria-label="Show password" aria-pressed="false">@Html.Icon("eye")</button>
             </div>
+            <span asp-validation-for="Password" class="field-error"></span>
+        </div>
 
+        <label class="check">
+            <input asp-for="RememberMe" type="checkbox" />
+            <span>Keep me signed in on this device</span>
+        </label>
 
-            <!-- PASSWORD -->
+        <button type="submit" class="btn btn-primary btn-block">Log in</button>
+    </form>
 
-            <div class="form-group">
-                <label asp-for="Password">
-                    Password
-                </label>
-
-                <div class="password-wrapper">
-                    <input asp-for="Password"
-                        id="loginPassword"
-                        class="glass-input"
-                        type="password"
-                        placeholder="Enter your password"
-                        autocomplete="current-password" />
-                </div>
-
-                <span asp-validation-for="Password"
-                    class="field-error">
-                </span>
-            </div>
-
-            <!-- REMEMBER ME -->
-
-            <div class="form-options">
-
-                <label class="remember-me">
-
-                    <input asp-for="RememberMe"
-                           type="checkbox" />
-
-                    Remember me
-
-                </label>
-
-            </div>
-
-
-            <!-- LOGIN BUTTON -->
-
-            <button type="submit"
-                    class="primary-button">
-
-                Log In
-
-            </button>
-
-        </form>
-
-
-        <!-- REGISTER LINK -->
-
-        <p class="auth-footer">
-
-            Don't have an account?
-
-            <a asp-controller="Account"
-               asp-action="Register">
-
-                Register
-
-            </a>
-
-        </p>
-
-    </div>
-
+    <p class="auth-footer">
+        New to KABILIN? <a asp-controller="Account" asp-action="Register">Create an account</a>
+    </p>
 </div>
 
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const toast = document.getElementById("successToast");
-
-        if (toast) {
-            setTimeout(() => {
-                toast.classList.add("hide");
-            }, 3000);
-
-            setTimeout(() => {
-                toast.remove();
-            }, 3400);
-        }
-    });
-</script>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

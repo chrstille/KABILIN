@@ -1,0 +1,129 @@
+@model RequestDetailsViewModel
+@{
+    var r = Model.Request;
+    ViewData["Title"] = r.ReferenceNumber;
+    ViewData["Nav"] = "requests";
+    var justSubmitted = ViewData["JustSubmitted"] is true;
+}
+<div class="breadcrumb"><a asp-action="Index">Document requests</a> @Html.Icon("chevron-right", "icon-sm") <span>@r.ReferenceNumber</span></div>
+<div class="page-header">
+    <div>
+        <h1>@r.Type!.TypeName</h1>
+        <p>For @r.Deceased!.FullName &middot; Reference <strong>@r.ReferenceNumber</strong></p>
+    </div>
+    <div class="actions">
+        @if (Model.IsOverdue) { <span class="badge badge-overdue">Past estimate</span> }
+        @Html.StatusBadge(r.Status!.StatusName)
+    </div>
+</div>
+
+@if (justSubmitted)
+{
+    <div class="alert alert-success mb-16">@Html.Icon("circle-check")<div><strong>Request received.</strong> Keep your reference number <strong>@r.ReferenceNumber</strong>. We will notify you when the status changes.</div></div>
+}
+@if (r.StatusID == StatusIds.Incomplete)
+{
+    <div class="alert alert-warning mb-16">@Html.Icon("triangle-alert")<div><strong>Action needed.</strong> @(string.IsNullOrWhiteSpace(r.LatestRemarks) ? "Please correct the documents marked below." : r.LatestRemarks)</div></div>
+}
+@if (r.StatusID == StatusIds.Rejected)
+{
+    <div class="alert alert-error mb-16">@Html.Icon("circle-alert")<div><strong>This request was rejected.</strong> @r.LatestRemarks</div></div>
+}
+
+<div class="card mb-16">
+    <div class="card-header"><h3>@Html.Icon("route") Progress</h3></div>
+    <div class="card-body">
+        <partial name="_Tracker" model="Model.Steps" />
+        <div class="tracker-note grid grid-3">
+            <div><div class="support">Filed</div><div class="strong">@Ph.DateTimeText(r.DateFiled)</div></div>
+            <div>
+                <div class="support">Estimated completion</div>
+                <div class="strong">@(r.EstimatedCompletionDate.HasValue ? Ph.Date(r.EstimatedCompletionDate) : "Not set yet")</div>
+                <div class="small muted">An estimate only, not a guaranteed date.</div>
+            </div>
+            <div><div class="support">Latest remarks</div><div>@(string.IsNullOrWhiteSpace(r.LatestRemarks) ? "No remarks yet." : r.LatestRemarks)</div></div>
+        </div>
+    </div>
+</div>
+
+<div class="split">
+    <div class="card">
+        <div class="card-header">
+            <h3>@Html.Icon("paperclip") Requirements</h3>
+            @if (Model.MissingRequired > 0) { <span class="badge badge-incomplete-requirements">@Model.MissingRequired missing</span> }
+        </div>
+        <div class="card-body flush">
+            <ul class="req-list">
+            @foreach (var row in Model.Requirements)
+            {
+                var d = row.Current;
+                <li class="req-item">
+                    <div class="req-head">
+                        <div>
+                            <div class="req-name">@row.Requirement.Name @if (!row.Requirement.IsRequired) { <span class="muted strong" style="font-weight:400">(optional)</span> }</div>
+                            @if (!string.IsNullOrEmpty(row.Requirement.Description)) { <div class="support">@row.Requirement.Description</div> }
+                        </div>
+                        @if (d == null) { <span class="badge @(row.Requirement.IsRequired ? "badge-incomplete-requirements" : "badge-muted")">Not uploaded</span> }
+                        else { @Html.VerificationBadge(d.VerificationStatus) }
+                    </div>
+
+                    @if (d != null)
+                    {
+                        <div class="req-file">
+                            @Html.Icon("paperclip", "icon-sm")
+                            <a asp-action="File" asp-route-id="@d.DocumentID" target="_blank" rel="noopener">@d.OriginalFileName</a>
+                            <span class="muted">@Ph.FileSize(d.FileSize) &middot; uploaded @Ph.Date(d.UploadedAt)</span>
+                        </div>
+                        @if (d.VerificationStatus == VerificationStates.Incomplete && !string.IsNullOrWhiteSpace(d.VerificationRemarks))
+                        {
+                            <div class="alert alert-warning req-note">@Html.Icon("triangle-alert", "icon-sm")<div>@d.VerificationRemarks</div></div>
+                        }
+                    }
+
+                    @if (Model.CanUpload && d?.VerificationStatus != VerificationStates.Verified)
+                    {
+                        <form asp-action="Upload" asp-route-id="@r.RequestID" method="post" enctype="multipart/form-data" class="upload-inline">
+                            <input type="hidden" name="requirementId" value="@row.Requirement.RequirementID" />
+                            <input class="file-input" type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" required data-upload aria-label="Choose file for @row.Requirement.Name" />
+                            <button type="submit" class="btn btn-secondary btn-sm">@(d == null ? "Upload" : "Replace file")</button>
+                            <span class="field-error" data-upload-msg></span>
+                        </form>
+                    }
+                </li>
+            }
+            </ul>
+        </div>
+    </div>
+
+    <div class="stack">
+        <div class="card">
+            <div class="card-header"><h3>@Html.Icon("info") Request details</h3></div>
+            <div class="card-body">
+                <dl class="kv">
+                    <dt>Deceased</dt><dd><a asp-controller="Deceased" asp-action="Details" asp-route-id="@r.DeceasedID">@r.Deceased.FullName</a></dd>
+                    <dt>Type</dt><dd>@r.Type.TypeName</dd>
+                    <dt>Status</dt><dd>@Html.StatusBadge(r.Status.StatusName)</dd>
+                    @if (r.DateReleased.HasValue) { <dt>Completed</dt><dd>@Ph.DateTimeText(r.DateReleased.Value)</dd> }
+                    @if (!string.IsNullOrWhiteSpace(r.FamilyNotes)) { <dt>Your notes</dt><dd>@r.FamilyNotes</dd> }
+                </dl>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h3>@Html.Icon("history") History</h3></div>
+            <div class="card-body">
+                <ul class="timeline">
+                @foreach (var h in Model.History)
+                {
+                    <li>
+                        <span class="pip"></span>
+                        <div class="t-title">@h.Title</div>
+                        <div class="t-meta">@h.Actor &middot; @Ph.DateTimeText(h.When)</div>
+                        @if (!string.IsNullOrWhiteSpace(h.Text)) { <div class="t-text">@h.Text</div> }
+                    </li>
+                }
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

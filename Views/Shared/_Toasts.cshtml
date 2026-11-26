@@ -1,0 +1,10 @@
+<div class="toast-region" aria-live="polite">
+    @if (TempData["Success"] is string ok)
+    {
+        <div class="toast" role="status">@Html.Icon("circle-check")<p>@ok</p><button type="button" aria-label="Dismiss">@Html.Icon("x", "icon-sm")</button></div>
+    }
+    @if (TempData["Error"] is string err)
+    {
+        <div class="toast toast-error" role="alert">@Html.Icon("circle-alert")<p>@err</p><button type="button" aria-label="Dismiss">@Html.Icon("x", "icon-sm")</button></div>
+    }
+</div>

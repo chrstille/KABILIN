@@ -1,0 +1,41 @@
+@model FuneralHomeFormViewModel
+@{
+    var editing = Model.FuneralID > 0;
+    ViewData["Title"] = editing ? "Edit funeral home" : "Add funeral home"; ViewData["Nav"] = "funeral";
+}
+@section Styles { <link rel="stylesheet" href="~/lib/leaflet/leaflet.css" /> }
+<div class="breadcrumb"><a asp-action="Index">Funeral homes</a> @Html.Icon("chevron-right", "icon-sm") <span>@(editing ? "Edit" : "Add")</span></div>
+<div class="page-header"><div><h1>@(editing ? "Edit funeral home" : "Add funeral home")</h1><p>Use real, verified details. Families will contact the funeral home using this information.</p></div></div>
+
+<form method="post" novalidate>
+    <div asp-validation-summary="ModelOnly" class="alert alert-error mb-16"></div>
+    <div class="grid grid-2" style="align-items:start">
+        <div class="stack">
+            <div class="card"><div class="card-header"><h3>@Html.Icon("building-2") Details</h3></div><div class="card-body"><div class="form-grid">
+                <div class="field full"><label asp-for="FuneralName" class="label">Name <span class="req">*</span></label><input asp-for="FuneralName" class="input" /><span asp-validation-for="FuneralName" class="field-error"></span></div>
+                <div class="field full"><label asp-for="Location" class="label">Complete address <span class="req">*</span></label><input asp-for="Location" class="input" /><span asp-validation-for="Location" class="field-error"></span></div>
+                <div class="field"><label asp-for="City" class="label">City or municipality</label><input asp-for="City" class="input" /><span class="hint">Used for the location filter.</span></div>
+                <div class="field"><label asp-for="ContactNum" class="label">Contact number <span class="req">*</span></label><input asp-for="ContactNum" class="input" type="tel" /><span asp-validation-for="ContactNum" class="field-error"></span></div>
+                <div class="field full"><label asp-for="EmailAddress" class="label">Email <span class="opt">(optional)</span></label><input asp-for="EmailAddress" class="input" type="email" /><span asp-validation-for="EmailAddress" class="field-error"></span></div>
+                <div class="field full"><label asp-for="Services" class="label">Services offered</label><textarea asp-for="Services" class="textarea" placeholder="One service per line, e.g. Embalming"></textarea><span class="hint">Enter one service per line.</span></div>
+                <div class="field full"><label asp-for="Description" class="label">About <span class="opt">(optional)</span></label><textarea asp-for="Description" class="textarea"></textarea></div>
+                <div class="field full"><label class="check"><input asp-for="IsActive" type="checkbox" /><span>Visible to families</span></label></div>
+            </div></div></div>
+        </div>
+        <div class="card"><div class="card-header"><h3>@Html.Icon("map-pin") Map location</h3></div><div class="card-body">
+            <p class="support mb-16">Click the map to place the marker, drag it to adjust, or type the coordinates. Leave both empty if unknown.</p>
+            <div id="pickerMap" class="map map-sm mb-16" role="application" aria-label="Pick a location on the map"></div>
+            <div class="form-grid">
+                <div class="field"><label asp-for="Latitude" class="label">Latitude</label><input asp-for="Latitude" class="input" type="number" step="any" inputmode="decimal" /><span asp-validation-for="Latitude" class="field-error"></span></div>
+                <div class="field"><label asp-for="Longitude" class="label">Longitude</label><input asp-for="Longitude" class="input" type="number" step="any" inputmode="decimal" /><span asp-validation-for="Longitude" class="field-error"></span></div>
+            </div>
+            <div class="mt-16"><button type="button" class="btn btn-ghost btn-sm" id="clearCoords">Clear location</button></div>
+        </div></div>
+    </div>
+    <div class="form-actions"><button type="submit" class="btn btn-primary">@(editing ? "Save changes" : "Add funeral home")</button><a class="btn btn-ghost" asp-action="Index">Cancel</a></div>
+</form>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/lib/leaflet/leaflet.js"></script>
+    <script src="~/js/funeral-picker.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,25 @@
+@model SendNotificationViewModel
+@{
+    ViewData["Title"] = "Send notification"; ViewData["Nav"] = "notifications";
+    var recipients = (Dictionary<int, string>)ViewData["Recipients"]!;
+}
+<div class="breadcrumb"><a asp-action="Index">Notifications</a> @Html.Icon("chevron-right", "icon-sm") <span>Send</span></div>
+<div class="page-header"><div><h1>Send a notification</h1><p>Use this to remind a family about missing requirements or share a message about their request.</p></div></div>
+<div class="card" style="max-width:720px"><div class="card-body">
+    <form method="post" novalidate>
+        <div asp-validation-summary="ModelOnly" class="alert alert-error mb-16"></div>
+        <div class="stack">
+            <div class="field"><label asp-for="UserID" class="label">Recipient <span class="req">*</span></label>
+                <select asp-for="UserID" class="select"><option value="">Choose a family representative...</option>
+                    @foreach (var r in recipients) { <option value="@r.Key" selected="@(Model.UserID == r.Key)">@r.Value</option> }</select>
+                <span asp-validation-for="UserID" class="field-error"></span></div>
+            <div class="field"><label asp-for="ReferenceNumber" class="label">Related request <span class="opt">(optional)</span></label>
+                <input asp-for="ReferenceNumber" class="input" placeholder="e.g. KBL-261125-4F7Q2" /><span class="hint">Links the notification to a request owned by the recipient.</span>
+                <span asp-validation-for="ReferenceNumber" class="field-error"></span></div>
+            <div class="field"><label asp-for="Title" class="label">Title <span class="req">*</span></label><input asp-for="Title" class="input" /><span asp-validation-for="Title" class="field-error"></span></div>
+            <div class="field"><label asp-for="Message" class="label">Message <span class="req">*</span></label><textarea asp-for="Message" class="textarea"></textarea><span asp-validation-for="Message" class="field-error"></span></div>
+        </div>
+        <div class="form-actions"><button type="submit" class="btn btn-primary">Send notification</button><a class="btn btn-ghost" asp-action="Index">Cancel</a></div>
+    </form>
+</div></div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }
